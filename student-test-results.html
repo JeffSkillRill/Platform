@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Results — SAT Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --teal:        #3adbba;
+      --teal-dark:   #2bc4a4;
+      --teal-darker: #1fa88c;
+      --teal-light:  #e8faf6;
+      --teal-mid:    #c0f2e8;
+      --navy:        #0d2137;
+      --bg:          #f2fbf8;
+      --surface:     #ffffff;
+      --text:        #0d2137;
+      --text-muted:  #4a7c6f;
+      --text-faint:  #8ab5ac;
+      --border:      #d4ede8;
+      --green:       #059669;
+      --green-light: #ecfdf5;
+      --red:         #dc2626;
+      --red-light:   #fef2f2;
+      --amber:       #d97706;
+      --amber-light: #fffbeb;
+    }
+
+    body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+    /* Top bar */
+    .topbar {
+      background:var(--navy); height:56px;
+      display:flex; align-items:center; padding:0 1.5rem; gap:1rem;
+      position:sticky; top:0; z-index:100;
+    }
+    .topbar-name { font-family:'Space Grotesk',sans-serif; font-size:0.9rem; font-weight:700; color:#fff; flex:1; }
+    .btn-back {
+      display:flex; align-items:center; gap:5px;
+      background:rgba(255,255,255,0.1); border:none; border-radius:7px;
+      padding:0.4rem 0.9rem; font-family:'Inter',sans-serif;
+      font-size:0.8rem; font-weight:600; color:#fff; cursor:pointer;
+      transition:background 0.12s;
+    }
+    .btn-back:hover { background:rgba(255,255,255,0.2); }
+    .btn-back svg { width:13px; height:13px; }
+
+    .content { max-width:860px; margin:0 auto; padding:2rem 1.5rem 4rem; }
+
+    /* Summary header */
+    .summary-card {
+      background:var(--navy); border-radius:16px;
+      padding:1.75rem 2rem; margin-bottom:1.5rem;
+      position:relative; overflow:hidden;
+    }
+    .summary-card::before {
+      content:"RESULTS";
+      position:absolute; right:1rem; top:50%; transform:translateY(-50%);
+      font-family:'Space Grotesk',sans-serif; font-size:5rem; font-weight:700;
+      color:rgba(58,219,186,0.05); pointer-events:none; white-space:nowrap;
+    }
+
+    .summary-top {
+      display:flex; align-items:flex-start; justify-content:space-between;
+      margin-bottom:1.25rem; flex-wrap:wrap; gap:1rem;
+    }
+    .summary-title { font-family:'Space Grotesk',sans-serif; font-size:1.1rem; font-weight:700; color:#fff; margin-bottom:0.2rem; }
+    .summary-sub   { font-size:0.8rem; color:rgba(255,255,255,0.45); }
+
+    .time-badge {
+      display:flex; align-items:center; gap:6px;
+      background:rgba(58,219,186,0.1); border-radius:8px;
+      padding:0.45rem 0.9rem;
+      font-size:0.8rem; font-weight:600; color:var(--teal);
+    }
+    .time-badge svg { width:13px; height:13px; }
+
+    .summary-stats { display:flex; gap:1rem; flex-wrap:wrap; }
+    .sum-stat {
+      flex:1; min-width:100px;
+      background:rgba(255,255,255,0.06); border-radius:10px;
+      padding:0.85rem 1rem;
+    }
+    .sum-stat-val  { font-family:'Space Grotesk',sans-serif; font-size:1.5rem; font-weight:700; }
+    .sum-stat-val.correct  { color:#10b981; }
+    .sum-stat-val.wrong    { color:#f87171; }
+    .sum-stat-val.skipped  { color:rgba(255,255,255,0.35); }
+    .sum-stat-lbl  { font-size:0.7rem; color:rgba(255,255,255,0.4); margin-top:2px; text-transform:uppercase; letter-spacing:0.06em; }
+
+    /* Filter bar */
+    .filter-bar {
+      display:flex; gap:0.5rem; margin-bottom:1.25rem; flex-wrap:wrap;
+    }
+    .filter-btn {
+      padding:0.4rem 1rem; border-radius:99px; border:1.5px solid var(--border);
+      background:var(--surface); font-family:'Inter',sans-serif;
+      font-size:0.78rem; font-weight:600; color:var(--text-muted);
+      cursor:pointer; transition:all 0.12s;
+    }
+    .filter-btn:hover   { border-color:var(--teal); color:var(--teal-darker); }
+    .filter-btn.active  { background:var(--teal); border-color:var(--teal); color:var(--navy); }
+
+    /* Section divider */
+    .section-divider {
+      display:flex; align-items:center; gap:0.75rem; margin:1.5rem 0 1rem;
+    }
+    .section-divider-line { flex:1; height:1px; background:var(--border); }
+    .section-divider-label {
+      font-size:0.72rem; font-weight:700; letter-spacing:0.1em;
+      text-transform:uppercase; color:var(--text-muted);
+      white-space:nowrap;
+    }
+
+    /* Question review cards */
+    .q-review {
+      background:var(--surface); border:1.5px solid var(--border);
+      border-radius:14px; margin-bottom:0.85rem; overflow:hidden;
+      transition:border-color 0.12s;
+    }
+    .q-review.correct { border-color:#10b981; }
+    .q-review.wrong   { border-color:#f87171; }
+    .q-review.skipped { border-color:var(--border); opacity:0.8; }
+
+    .q-review-head {
+      display:flex; align-items:center; gap:0.75rem;
+      padding:0.85rem 1.1rem;
+      border-bottom:1px solid var(--border);
+      cursor:pointer; user-select:none;
+    }
+
+    .q-num-badge {
+      width:26px; height:26px; border-radius:7px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:0.68rem; font-weight:700; flex-shrink:0;
+    }
+    .q-num-badge.correct { background:var(--green-light); color:var(--green); }
+    .q-num-badge.wrong   { background:var(--red-light); color:var(--red); }
+    .q-num-badge.skipped { background:var(--teal-light); color:var(--text-faint); }
+
+    .q-stem-preview {
+      flex:1; font-size:0.85rem; color:var(--text);
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+
+    .result-tag {
+      font-size:0.7rem; font-weight:700; padding:2px 8px;
+      border-radius:99px; flex-shrink:0; white-space:nowrap;
+    }
+    .result-tag.correct { background:var(--green-light); color:var(--green); }
+    .result-tag.wrong   { background:var(--red-light);   color:var(--red); }
+    .result-tag.skipped { background:var(--teal-light);  color:var(--text-faint); }
+
+    .expand-icon { width:14px; height:14px; color:var(--text-faint); transition:transform 0.2s; flex-shrink:0; }
+    .q-review.open .expand-icon { transform:rotate(180deg); }
+
+    /* Expanded body */
+    .q-review-body { display:none; padding:1.1rem; border-top:1px solid var(--border); }
+    .q-review.open .q-review-body { display:block; }
+
+    .q-full-stem {
+      font-size:0.92rem; line-height:1.65; color:var(--text);
+      margin-bottom:1.1rem;
+      padding:0.9rem 1rem;
+      background:var(--bg); border-radius:9px;
+    }
+
+    .q-image { width:100%; max-height:240px; object-fit:contain; border-radius:8px; margin-bottom:1rem; border:1px solid var(--border); }
+
+    .answer-row {
+      display:flex; align-items:flex-start; gap:10px;
+      padding:0.65rem 0.9rem; border-radius:8px; margin-bottom:0.4rem;
+      font-size:0.88rem; line-height:1.45;
+    }
+    .answer-row.was-correct { background:var(--green-light); }
+    .answer-row.was-wrong   { background:var(--red-light); }
+    .answer-row.neutral     { background:var(--bg); }
+
+    .ans-letter {
+      width:24px; height:24px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      font-size:0.68rem; font-weight:700; flex-shrink:0;
+    }
+    .answer-row.was-correct .ans-letter { background:var(--green); color:#fff; }
+    .answer-row.was-wrong   .ans-letter { background:var(--red); color:#fff; }
+    .answer-row.neutral     .ans-letter { background:var(--border); color:var(--text-muted); }
+
+    .ans-text { color:var(--text); }
+    .ans-text .tag { font-size:0.68rem; font-weight:700; margin-left:6px; padding:1px 6px; border-radius:4px; }
+    .ans-text .tag.correct-tag { background:var(--green); color:#fff; }
+    .ans-text .tag.wrong-tag   { background:var(--red); color:#fff; }
+    .ans-text .tag.your-tag    { background:var(--amber); color:#fff; }
+
+    @media (max-width:600px) {
+      .content { padding:1rem 1rem 3rem; }
+      .summary-stats { flex-direction:column; }
+    }
+    @media (prefers-reduced-motion:reduce) { * { transition:none !important; } }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="topbar-name" id="topbarName">Test Results</div>
+    <button class="btn-back" onclick="window.location.href='student-home.html'">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12h18M3 12l7-7M3 12l7 7"/></svg>
+      Back to home
+    </button>
+  </div>
+
+  <div class="content">
+
+    <!-- Summary card -->
+    <div class="summary-card">
+      <div class="summary-top">
+        <div>
+          <div class="summary-title" id="summaryTitle">—</div>
+          <div class="summary-sub" id="summarySub">—</div>
+        </div>
+        <div class="time-badge" id="timeBadge">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" d="M12 6v6l4 2"/></svg>
+          —
+        </div>
+      </div>
+      <div class="summary-stats" id="summaryStats"></div>
+    </div>
+
+    <!-- Filter bar -->
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="setFilter('all',this)">All questions</button>
+      <button class="filter-btn" onclick="setFilter('correct',this)">✓ Correct</button>
+      <button class="filter-btn" onclick="setFilter('wrong',this)">✗ Wrong</button>
+      <button class="filter-btn" onclick="setFilter('skipped',this)">— Skipped</button>
+    </div>
+
+    <!-- Questions list -->
+    <div id="questionList"></div>
+
+  </div>
+
+  <script>
+    const LETTERS = ['A','B','C','D'];
+    const SUPABASE_URL     = 'https://lsbpskmzffmaztczlokh.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxzYnBza216ZmZtYXp0Y3psb2toIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI2OTc5NzMsImV4cCI6MjA5ODI3Mzk3M30.zRtly7a6XPKoU6BaZ2eftQxxOTFSUkw1wQ8A6-H1-tI';
+    const db = {
+      async getWhere(table, col, op, val, extra='') {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${col}=${op}.${encodeURIComponent(val)}${extra}&select=*`, {
+          headers:{ 'apikey':SUPABASE_ANON_KEY,'Authorization':`Bearer ${SUPABASE_ANON_KEY}` }
+        });
+        if (!res.ok) throw new Error(await res.text());
+        return res.json();
+      }
+    };
+
+    let allQuestions = [];
+    let answers      = {};
+    let activeFilter = 'all';
+
+    // Load result from localStorage
+    const result = JSON.parse(localStorage.getItem('sat_last_result') || '{}');
+    if (!result.questions) {
+      document.querySelector('.content').innerHTML =
+        '<div style="text-align:center;padding:4rem;color:var(--text-faint);">No results found. Please take a test first.</div>';
+    } else {
+      allQuestions = result.questions;
+      answers      = result.answers || {};
+      init();
+    }
+
+    async function init() {
+      await hydrateCorrectAnswers();
+      const canReview = allQuestions.every(q => q.correct !== undefined && q.correct !== null);
+      if (!canReview) {
+        document.querySelector('.content').innerHTML =
+          '<div style="text-align:center;padding:4rem;color:var(--text-faint);">Review is unavailable for this session. Please open the saved result after the secure review API is enabled.</div>';
+        return;
+      }
+
+      document.getElementById('topbarName').textContent   = result.testName || 'Test Results';
+      document.getElementById('summaryTitle').textContent = result.testName || 'Test Results';
+
+      // Time taken
+      const t   = result.timeTaken || 0;
+      const hh  = Math.floor(t / 3600);
+      const mm  = Math.floor((t % 3600) / 60);
+      const ss  = t % 60;
+      const timeStr = hh > 0
+        ? `${hh}h ${mm}m ${ss}s`
+        : `${mm}m ${ss}s`;
+
+      document.getElementById('timeBadge').innerHTML = `
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" d="M12 6v6l4 2"/></svg>
+        Time: ${timeStr}`;
+
+      document.getElementById('summarySub').textContent =
+        `${allQuestions.length} questions · Completed ${new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}`;
+
+      // Count correct / wrong / skipped
+      let correct = 0, wrong = 0, skipped = 0;
+      allQuestions.forEach(q => {
+        const chosen = answers[q.id];
+        if (chosen === null || chosen === undefined) skipped++;
+        else if (chosen === q.correct) correct++;
+        else wrong++;
+      });
+
+      document.getElementById('summaryStats').innerHTML = `
+        <div class="sum-stat"><div class="sum-stat-val correct">${correct}</div><div class="sum-stat-lbl">Correct</div></div>
+        <div class="sum-stat"><div class="sum-stat-val wrong">${wrong}</div><div class="sum-stat-lbl">Wrong</div></div>
+        <div class="sum-stat"><div class="sum-stat-val skipped">${skipped}</div><div class="sum-stat-lbl">Skipped</div></div>
+        <div class="sum-stat"><div class="sum-stat-val" style="color:#fff;">${allQuestions.length}</div><div class="sum-stat-lbl">Total</div></div>`;
+
+      renderList();
+    }
+
+    async function hydrateCorrectAnswers() {
+      const hasCorrectAnswers = allQuestions.every(q => q.correct !== undefined && q.correct !== null);
+      if (hasCorrectAnswers || !result.testId) return;
+
+      try {
+        const fullQuestions = await db.getWhere('questions','test_id','eq',result.testId,'&order=order_num.asc');
+        if (fullQuestions.length) {
+          allQuestions = fullQuestions.map(q => ({
+            ...q,
+            choices: typeof q.choices === 'string' ? JSON.parse(q.choices) : q.choices
+          }));
+        }
+      } catch (err) {
+        document.getElementById('summarySub').textContent =
+          'Review unavailable because correct answers are protected for this session.';
+      }
+    }
+
+    function getStatus(q) {
+      const chosen = answers[q.id];
+      if (chosen === null || chosen === undefined) return 'skipped';
+      return chosen === q.correct ? 'correct' : 'wrong';
+    }
+
+    function setFilter(f, btn) {
+      activeFilter = f;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderList();
+    }
+
+    function renderList() {
+      const list   = document.getElementById('questionList');
+      let filtered = allQuestions.filter(q => activeFilter === 'all' || getStatus(q) === activeFilter);
+
+      if (filtered.length === 0) {
+        list.innerHTML = `<div style="text-align:center;padding:3rem;color:var(--text-faint);">No questions in this category.</div>`;
+        return;
+      }
+
+      // Group by section
+      const rw   = filtered.filter(q => q.section === 'rw');
+      const math = filtered.filter(q => q.section === 'math');
+
+      let html = '';
+
+      if (rw.length > 0) {
+        html += `<div class="section-divider"><div class="section-divider-line"></div><div class="section-divider-label">Reading & Writing</div><div class="section-divider-line"></div></div>`;
+        html += rw.map((q,i) => buildCard(q, allQuestions.indexOf(q)+1)).join('');
+      }
+      if (math.length > 0) {
+        html += `<div class="section-divider"><div class="section-divider-line"></div><div class="section-divider-label">Math</div><div class="section-divider-line"></div></div>`;
+        html += math.map((q,i) => buildCard(q, allQuestions.indexOf(q)+1)).join('');
+      }
+
+      list.innerHTML = html;
+    }
+
+    function buildCard(q, globalNum) {
+      const status  = getStatus(q);
+      const chosen  = answers[q.id];
+
+      const imgHtml = q.image_url
+        ? `<img class="q-image" src="${q.image_url}" alt="Question image"/>`
+        : '';
+
+      const choicesHtml = q.choices.map((c, i) => {
+        const isCorrect = i === q.correct;
+        const isChosen  = i === chosen;
+        let rowClass = 'neutral';
+        if (isCorrect) rowClass = 'was-correct';
+        else if (isChosen && !isCorrect) rowClass = 'was-wrong';
+
+        let tags = '';
+        if (isCorrect) tags += `<span class="tag correct-tag">Correct answer</span>`;
+        if (isChosen && !isCorrect) tags += `<span class="tag wrong-tag">Your answer</span>`;
+        if (isChosen && isCorrect)  tags += `<span class="tag correct-tag">Your answer ✓</span>`;
+
+        return `
+          <div class="answer-row ${rowClass}">
+            <div class="ans-letter">${LETTERS[i]}</div>
+            <div class="ans-text">${c}${tags}</div>
+          </div>`;
+      }).join('');
+
+      const labelMap = { correct:'Correct', wrong:'Wrong', skipped:'Skipped' };
+
+      return `
+        <div class="q-review ${status}" id="card-${q.id}">
+          <div class="q-review-head" onclick="toggleCard('${q.id}')">
+            <div class="q-num-badge ${status}">${globalNum}</div>
+            <div class="q-stem-preview">${q.stem}</div>
+            <div class="result-tag ${status}">${labelMap[status]}</div>
+            <svg class="expand-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+          </div>
+          <div class="q-review-body">
+            ${imgHtml}
+            <div class="q-full-stem">${q.stem}</div>
+            ${choicesHtml}
+          </div>
+        </div>`;
+    }
+
+    function toggleCard(qId) {
+      const card = document.getElementById('card-' + qId);
+      card.classList.toggle('open');
+    }
+  </script>
+</body>
+</html>

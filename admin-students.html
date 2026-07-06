@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Students — Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --teal:        #3adbba;
+      --teal-dark:   #2bc4a4;
+      --teal-darker: #1fa88c;
+      --teal-light:  #e8faf6;
+      --teal-mid:    #c0f2e8;
+      --navy:        #0d2137;
+      --bg:          #f2fbf8;
+      --surface:     #ffffff;
+      --text:        #0d2137;
+      --text-muted:  #4a7c6f;
+      --text-faint:  #8ab5ac;
+      --border:      #d4ede8;
+      --red:         #dc2626;
+      --red-light:   #fef2f2;
+      --sidebar-w:   230px;
+    }
+    body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+    /* Sidebar — identical to dashboard */
+    .sidebar {
+      position:fixed; top:0; left:0; bottom:0; width:var(--sidebar-w);
+      background:var(--teal); display:flex; flex-direction:column; z-index:100;
+    }
+    .sidebar-logo { padding:1.4rem 1.25rem 1.1rem; border-bottom:1px solid rgba(255,255,255,0.2); margin-bottom:0.5rem; }
+    .logo-wrap { display:flex; align-items:center; gap:9px; }
+    .logo-icon { width:32px; height:32px; background:var(--navy); border-radius:9px; display:flex; align-items:center; justify-content:center; }
+    .logo-icon svg { width:17px; height:17px; }
+    .logo-text { font-family:'Space Grotesk',sans-serif; font-size:1rem; font-weight:700; color:var(--navy); line-height:1.1; }
+    .logo-text small { display:block; font-size:0.6rem; font-weight:500; letter-spacing:0.08em; text-transform:uppercase; opacity:0.6; }
+    .nav-label { font-size:0.62rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:rgba(13,33,55,0.45); padding:0.75rem 1.25rem 0.3rem; }
+    .nav-item { display:flex; align-items:center; gap:9px; padding:0.55rem 1.25rem; font-size:0.875rem; font-weight:500; color:rgba(13,33,55,0.6); text-decoration:none; cursor:pointer; transition:background 0.12s,color 0.12s; position:relative; }
+    .nav-item:hover { background:rgba(255,255,255,0.25); color:var(--navy); }
+    .nav-item.active { background:rgba(255,255,255,0.35); color:var(--navy); font-weight:600; }
+    .nav-item.active::before { content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--navy); border-radius:0 2px 2px 0; }
+    .nav-icon { width:17px; height:17px; flex-shrink:0; opacity:0.75; }
+    .nav-item.active .nav-icon { opacity:1; }
+    .sidebar-bottom { margin-top:auto; padding:1rem 1rem 1.25rem; border-top:1px solid rgba(255,255,255,0.2); }
+    .admin-chip { display:flex; align-items:center; gap:9px; }
+    .admin-avatar { width:32px; height:32px; border-radius:50%; background:var(--navy); display:flex; align-items:center; justify-content:center; font-size:0.7rem; font-weight:700; color:var(--teal); flex-shrink:0; }
+    .admin-name { font-size:0.8rem; font-weight:600; color:var(--navy); }
+    .admin-role { font-size:0.65rem; color:rgba(13,33,55,0.5); }
+
+    /* Main */
+    .main { margin-left:var(--sidebar-w); min-height:100vh; display:flex; flex-direction:column; }
+    .topbar { background:var(--surface); border-bottom:1px solid var(--border); padding:0 2rem; height:62px; display:flex; align-items:center; gap:1rem; position:sticky; top:0; z-index:50; }
+    .topbar-title { font-family:'Space Grotesk',sans-serif; font-size:1rem; font-weight:700; color:var(--text); }
+    .topbar-right { margin-left:auto; }
+
+    .btn { display:inline-flex; align-items:center; gap:6px; font-family:'Inter',sans-serif; font-size:0.82rem; font-weight:600; padding:0.45rem 1rem; border-radius:8px; cursor:pointer; border:none; text-decoration:none; transition:background 0.12s,transform 0.1s; }
+    .btn:active { transform:scale(0.97); }
+    .btn svg { width:14px; height:14px; }
+    .btn-primary { background:var(--teal); color:var(--navy); }
+    .btn-primary:hover { background:var(--teal-dark); }
+    .btn-outline { background:var(--teal-light); color:var(--teal-darker); border:1.5px solid var(--teal-mid); }
+    .btn-outline:hover { background:var(--teal-mid); }
+    .btn-danger { background:var(--red-light); color:var(--red); border:1.5px solid #fca5a5; font-size:0.78rem; padding:0.35rem 0.75rem; }
+    .btn-danger:hover { background:#fecaca; }
+
+    .content { padding:1.75rem 2rem 3rem; }
+    .page-head { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:1.5rem; }
+    .page-head h1 { font-family:'Space Grotesk',sans-serif; font-size:1.4rem; font-weight:700; color:var(--text); margin-bottom:0.2rem; }
+    .page-head p { font-size:0.85rem; color:var(--text-muted); }
+
+    /* Stats strip */
+    .stats-strip { display:flex; gap:1rem; margin-bottom:1.5rem; }
+    .strip-stat { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:0.85rem 1.25rem; }
+    .strip-stat-val { font-family:'Space Grotesk',sans-serif; font-size:1.4rem; font-weight:700; color:var(--teal-darker); }
+    .strip-stat-lbl { font-size:0.72rem; color:var(--text-muted); margin-top:1px; }
+
+    /* Table card */
+    .table-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+    .table-toolbar { padding:0.9rem 1.25rem; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:0.75rem; }
+    .search-wrap { position:relative; flex:1; max-width:280px; }
+    .search-wrap svg { position:absolute; left:0.7rem; top:50%; transform:translateY(-50%); width:14px; height:14px; color:var(--text-faint); pointer-events:none; }
+    .search-input { width:100%; background:var(--teal-light); border:1.5px solid var(--teal-mid); border-radius:8px; padding:0.45rem 0.8rem 0.45rem 2.1rem; font-size:0.82rem; font-family:'Inter',sans-serif; color:var(--text); outline:none; transition:border-color 0.12s; }
+    .search-input::placeholder { color:var(--text-faint); }
+    .search-input:focus { border-color:var(--teal); }
+
+    table { width:100%; border-collapse:collapse; }
+    thead th { padding:0.7rem 1.25rem; font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-muted); background:var(--teal-light); text-align:left; border-bottom:1px solid var(--border); }
+    tbody tr { border-bottom:1px solid var(--border); transition:background 0.1s; }
+    tbody tr:last-child { border-bottom:none; }
+    tbody tr:hover { background:var(--bg); }
+    tbody td { padding:0.85rem 1.25rem; font-size:0.84rem; color:var(--text); vertical-align:middle; }
+
+    .student-cell { display:flex; align-items:center; gap:10px; }
+    .tbl-avatar { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.65rem; font-weight:700; color:var(--navy); flex-shrink:0; }
+    .tbl-name { font-weight:600; }
+    .tbl-username { font-size:0.72rem; color:var(--text-faint); }
+    .tbl-date { font-size:0.78rem; color:var(--text-muted); }
+
+    .empty-row td { text-align:center; padding:3rem; color:var(--text-faint); font-size:0.85rem; }
+
+    /* Loading spinner */
+    .spinner { display:inline-block; width:18px; height:18px; border:2px solid var(--teal-mid); border-top-color:var(--teal); border-radius:50%; animation:spin 0.7s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    /* Modal */
+    .modal-overlay { display:none; position:fixed; inset:0; background:rgba(13,33,55,0.5); z-index:200; align-items:center; justify-content:center; padding:1rem; }
+    .modal-overlay.open { display:flex; }
+    .modal { background:#fff; border-radius:16px; padding:2rem; width:100%; max-width:420px; box-shadow:0 8px 40px rgba(0,0,0,0.2); }
+    .modal-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:1.25rem; }
+    .modal-title { font-family:'Space Grotesk',sans-serif; font-size:1.1rem; font-weight:700; color:var(--text); }
+    .modal-close { background:none; border:none; cursor:pointer; color:var(--text-faint); font-size:1.2rem; line-height:1; }
+    .modal-close:hover { color:var(--text); }
+
+    .field { margin-bottom:1rem; }
+    .field:last-of-type { margin-bottom:0; }
+    .field label { display:block; font-size:0.8rem; font-weight:600; color:var(--text); margin-bottom:0.4rem; }
+    .field input { width:100%; background:var(--teal-light); border:1.5px solid var(--teal-mid); border-radius:9px; padding:0.65rem 0.85rem; font-size:0.9rem; font-family:'Inter',sans-serif; color:var(--text); outline:none; transition:border-color 0.12s; }
+    .field input:focus { border-color:var(--teal); box-shadow:0 0 0 3px rgba(58,219,186,0.15); }
+    .field input::placeholder { color:#9ecec5; }
+    .field-hint { font-size:0.75rem; color:var(--text-muted); margin-top:0.35rem; }
+
+    .modal-error { background:#fef2f2; border:1px solid #fca5a5; border-radius:8px; padding:0.6rem 0.9rem; font-size:0.82rem; color:var(--red); margin-bottom:1rem; display:none; }
+    .modal-error.visible { display:block; }
+
+    .modal-actions { display:flex; gap:0.6rem; margin-top:1.25rem; }
+    .modal-actions .btn { flex:1; justify-content:center; padding:0.7rem; font-size:0.88rem; border-radius:9px; }
+
+    /* Toast */
+    .toast { position:fixed; bottom:1.5rem; right:1.5rem; background:var(--navy); color:#fff; padding:0.75rem 1.25rem; border-radius:10px; font-size:0.85rem; font-weight:500; display:flex; align-items:center; gap:8px; box-shadow:0 4px 20px rgba(0,0,0,0.2); z-index:300; transform:translateY(80px); opacity:0; transition:transform 0.3s ease,opacity 0.3s ease; pointer-events:none; }
+    .toast.show { transform:translateY(0); opacity:1; }
+    .toast svg { width:16px; height:16px; color:var(--teal); }
+
+    /* Credential box shown after adding a student */
+    .cred-box { background:var(--teal-light); border:1.5px solid var(--teal-mid); border-radius:10px; padding:1rem; margin-top:1rem; }
+    .cred-box-title { font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:var(--teal-darker); margin-bottom:0.6rem; }
+    .cred-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem; }
+    .cred-row:last-child { margin-bottom:0; }
+    .cred-label { font-size:0.78rem; color:var(--text-muted); }
+    .cred-value { font-size:0.88rem; font-weight:700; color:var(--text); font-family:'Space Grotesk',sans-serif; }
+    .cred-note { font-size:0.72rem; color:var(--text-muted); margin-top:0.6rem; padding-top:0.6rem; border-top:1px solid var(--teal-mid); }
+
+    @media (prefers-reduced-motion:reduce) { * { transition:none !important; animation:none !important; } }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-wrap">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#3adbba" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2L2 7l10 5 10-5-10-5"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div class="logo-text">SAT Prep <small>Admin panel</small></div>
+      </div>
+    </div>
+    <p class="nav-label">Main</p>
+    <a class="nav-item" href="admin-dashboard.html">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+      Dashboard
+    </a>
+    <a class="nav-item active" href="admin-students.html">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      Students
+    </a>
+    <a class="nav-item" href="admin-tests.html">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      Tests
+    </a>
+    <a class="nav-item" href="admin-leaderboard.html">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+      Leaderboard
+    </a>
+    <div class="sidebar-bottom">
+      <div class="admin-chip">
+        <div class="admin-avatar" id="adminAvatar">JR</div>
+        <div>
+          <div class="admin-name" id="adminName">Jeff R.</div>
+          <div class="admin-role">Administrator</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="topbar">
+      <span class="topbar-title">Students</span>
+      <div class="topbar-right">
+        <button class="btn btn-primary" onclick="openAddModal()">
+          <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+          Add student
+        </button>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="page-head">
+        <div>
+          <h1>All students</h1>
+          <p>Add students and give them login credentials to access the platform.</p>
+        </div>
+      </div>
+
+      <!-- Stats strip -->
+      <div class="stats-strip">
+        <div class="strip-stat">
+          <div class="strip-stat-val" id="totalCount">—</div>
+          <div class="strip-stat-lbl">Total students</div>
+        </div>
+        <div class="strip-stat">
+          <div class="strip-stat-val" id="newThisWeek">—</div>
+          <div class="strip-stat-lbl">Added this week</div>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="table-card">
+        <div class="table-toolbar">
+          <div class="search-wrap">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="m21 21-4.35-4.35"/></svg>
+            <input class="search-input" type="text" placeholder="Search by name or username…" oninput="filterTable(this.value)"/>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Username</th>
+              <th>Password</th>
+              <th>Added on</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="studentTableBody">
+            <tr class="empty-row"><td colspan="5"><div class="spinner"></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Student Modal -->
+  <div class="modal-overlay" id="addModal">
+    <div class="modal">
+      <div class="modal-head">
+        <span class="modal-title">Add new student</span>
+        <button class="modal-close" onclick="closeAddModal()">✕</button>
+      </div>
+
+      <!-- Step 1: form -->
+      <div id="addForm">
+        <div class="modal-error" id="addError"></div>
+        <div class="field">
+          <label>Full name</label>
+          <input type="text" id="inputName" placeholder="e.g. Alisher Nazarov"/>
+        </div>
+        <div class="field">
+          <label>Username</label>
+          <input type="text" id="inputUsername" placeholder="e.g. alisher01" autocomplete="off" spellcheck="false"/>
+          <div class="field-hint">Students will use this to log in. No spaces.</div>
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="text" id="inputPassword" placeholder="e.g. sat2025" autocomplete="off"/>
+          <div class="field-hint">Share this with the student after creating their account.</div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-outline" onclick="closeAddModal()">Cancel</button>
+          <button class="btn btn-primary" id="addSubmitBtn" onclick="addStudent()">
+            Create account
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 2: success + credentials -->
+      <div id="addSuccess" style="display:none;">
+        <div style="text-align:center;margin-bottom:1.25rem;">
+          <div style="width:48px;height:48px;background:var(--teal-light);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 0.75rem;">
+            <svg width="22" height="22" fill="none" stroke="#3adbba" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+          </div>
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:1rem;font-weight:700;color:var(--text);">Account created!</div>
+          <div style="font-size:0.82rem;color:var(--text-muted);margin-top:0.25rem;">Share these credentials with the student.</div>
+        </div>
+        <div class="cred-box">
+          <div class="cred-box-title">Login credentials</div>
+          <div class="cred-row">
+            <span class="cred-label">Username</span>
+            <span class="cred-value" id="createdUsername">—</span>
+          </div>
+          <div class="cred-row">
+            <span class="cred-label">Password</span>
+            <span class="cred-value" id="createdPassword">—</span>
+          </div>
+          <div class="cred-note">
+            Login page: <strong>student-login.html</strong><br>
+            The student can change their password later from their profile.
+          </div>
+        </div>
+        <div class="modal-actions" style="margin-top:1.25rem;">
+          <button class="btn btn-outline" onclick="addAnother()">Add another</button>
+          <button class="btn btn-primary" onclick="closeAddModal()">Done</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete confirm modal -->
+  <div class="modal-overlay" id="deleteModal">
+    <div class="modal" style="max-width:360px;">
+      <div class="modal-head">
+        <span class="modal-title">Remove student?</span>
+        <button class="modal-close" onclick="closeDeleteModal()">✕</button>
+      </div>
+      <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:1.25rem;line-height:1.6;">
+        This will permanently delete <strong id="deleteStudentName"></strong>'s account. They will no longer be able to log in.
+      </p>
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="closeDeleteModal()">Cancel</button>
+        <button class="btn" style="background:var(--red);color:#fff;flex:1;justify-content:center;padding:0.7rem;border-radius:9px;" onclick="confirmDelete()">
+          Yes, remove
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+    <span id="toastMsg">Done</span>
+  </div>
+
+  <script>
+    // ============================================================
+    // PASTE YOUR SUPABASE CREDENTIALS HERE
+    // Go to: supabase.com → your project → Settings → API
+    // ============================================================
+    const SUPABASE_URL     = 'https://lsbpskmzffmaztczlokh.supabase.co';       // e.g. https://xyzxyz.supabase.co
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxzYnBza216ZmZtYXp0Y3psb2toIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI2OTc5NzMsImV4cCI6MjA5ODI3Mzk3M30.zRtly7a6XPKoU6BaZ2eftQxxOTFSUkw1wQ8A6-H1-tI'; // starts with eyJ...
+
+    // Supabase helper functions
+    const db = {
+      async getAll(table) {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?select=*`, {
+          headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
+        });
+        if (!res.ok) throw new Error(await res.text());
+        return res.json();
+      },
+      async getWhere(table, column, operator, value) {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${column}=${operator}.${encodeURIComponent(value)}&select=*`, {
+          headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
+        });
+        if (!res.ok) throw new Error(await res.text());
+        return res.json();
+      },
+      async insert(table, data) {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+            'Content-Type': 'application/json', 'Prefer': 'return=representation'
+          },
+          body: JSON.stringify(data)
+        });
+        if (!res.ok) throw new Error(await res.text());
+        return res.json();
+      },
+      async delete(table, id) {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, {
+          method: 'DELETE',
+          headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
+        });
+        if (!res.ok) throw new Error(await res.text());
+        return true;
+      }
+    };
+
+    // ---- Connection check on load ----
+    async function checkConnection() {
+      if (SUPABASE_URL === 'YOUR_SUPABASE_URL') {
+        document.getElementById('studentTableBody').innerHTML =
+          `<tr class="empty-row"><td colspan="5" style="color:#d97706;">
+            ⚠️ Supabase not connected yet. Open this file and paste your URL and ANON KEY at the top of the script.
+          </td></tr>`;
+        document.getElementById('totalCount').textContent = '—';
+        document.getElementById('newThisWeek').textContent = '—';
+        return false;
+      }
+      return true;
+    }
+
+    let allStudents = [];
+    let deleteTargetId = null;
+
+    // ---- Load session ----
+    const session = JSON.parse(localStorage.getItem('sat_user') || '{}');
+    if (session.name) {
+      const initials = session.name.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase();
+      document.getElementById('adminAvatar').textContent = initials;
+      document.getElementById('adminName').textContent = session.name;
+    }
+
+    // ---- Load all students from Supabase ----
+    async function loadStudents() {
+      const connected = await checkConnection();
+      if (!connected) return;
+      try {
+        // Fetch all users where role = student, ordered by creation date
+        const data = await db.getWhere('users', 'role', 'eq', 'student');
+        // Sort newest first
+        allStudents = data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        renderTable(allStudents);
+        updateStats(allStudents);
+      } catch (err) {
+        document.getElementById('studentTableBody').innerHTML =
+          `<tr class="empty-row"><td colspan="5">Failed to load students. Check your Supabase credentials.</td></tr>`;
+      }
+    }
+
+    // ---- Update stats strip ----
+    function updateStats(students) {
+      document.getElementById('totalCount').textContent = students.length;
+      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      const newCount = students.filter(s => new Date(s.created_at) > weekAgo).length;
+      document.getElementById('newThisWeek').textContent = newCount;
+    }
+
+    // ---- Render table ----
+    function renderTable(students) {
+      const tbody = document.getElementById('studentTableBody');
+      if (students.length === 0) {
+        tbody.innerHTML = `<tr class="empty-row"><td colspan="5">No students yet. Click "Add student" to get started.</td></tr>`;
+        return;
+      }
+
+      // Avatar colors cycle
+      const colors = ['#6D28D9','#0891B2','#3adbba','#059669','#DC2626','#D97706','#7C3AED','#B45309'];
+
+      tbody.innerHTML = students.map((s, i) => {
+        const initials = s.full_name.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase();
+        const color    = colors[i % colors.length];
+        const date     = new Date(s.created_at).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+        return `
+          <tr>
+            <td>
+              <div class="student-cell">
+                <div class="tbl-avatar" style="background:${color}22;color:${color};">${initials}</div>
+                <div>
+                  <div class="tbl-name">${s.full_name}</div>
+                </div>
+              </div>
+            </td>
+            <td><span class="tbl-username" style="font-size:0.84rem;color:var(--text);">@${s.username}</span></td>
+            <td><span style="font-family:monospace;font-size:0.84rem;background:var(--teal-light);padding:2px 8px;border-radius:5px;color:var(--text-muted);">${s.password}</span></td>
+            <td><span class="tbl-date">${date}</span></td>
+            <td>
+              <button class="btn btn-danger" onclick="openDeleteModal('${s.id}', '${s.full_name.replace(/'/g,"\\'")}')">
+                Remove
+              </button>
+            </td>
+          </tr>`;
+      }).join('');
+    }
+
+    // ---- Filter table by search ----
+    function filterTable(query) {
+      const q = query.toLowerCase();
+      const filtered = allStudents.filter(s =>
+        s.full_name.toLowerCase().includes(q) ||
+        s.username.toLowerCase().includes(q)
+      );
+      renderTable(filtered);
+    }
+
+    // ---- Add student modal ----
+    function openAddModal() {
+      document.getElementById('addModal').classList.add('open');
+      document.getElementById('addForm').style.display = 'block';
+      document.getElementById('addSuccess').style.display = 'none';
+      document.getElementById('addError').classList.remove('visible');
+      document.getElementById('inputName').value = '';
+      document.getElementById('inputUsername').value = '';
+      document.getElementById('inputPassword').value = '';
+      setTimeout(() => document.getElementById('inputName').focus(), 100);
+    }
+
+    function closeAddModal() {
+      document.getElementById('addModal').classList.remove('open');
+    }
+
+    function addAnother() {
+      document.getElementById('addForm').style.display = 'block';
+      document.getElementById('addSuccess').style.display = 'none';
+      document.getElementById('addError').classList.remove('visible');
+      document.getElementById('inputName').value = '';
+      document.getElementById('inputUsername').value = '';
+      document.getElementById('inputPassword').value = '';
+      document.getElementById('inputName').focus();
+    }
+
+    // ---- Add student to Supabase ----
+    async function addStudent() {
+      const name     = document.getElementById('inputName').value.trim();
+      const username = document.getElementById('inputUsername').value.trim().toLowerCase().replace(/\s+/g,'');
+      const password = document.getElementById('inputPassword').value.trim();
+      const errorEl  = document.getElementById('addError');
+      const btn      = document.getElementById('addSubmitBtn');
+
+      // Validate
+      errorEl.classList.remove('visible');
+      if (!name)     { showModalError('Full name is required.'); return; }
+      if (!username) { showModalError('Username is required.'); return; }
+      if (username.length < 3) { showModalError('Username must be at least 3 characters.'); return; }
+      if (!password) { showModalError('Password is required.'); return; }
+      if (password.length < 4) { showModalError('Password must be at least 4 characters.'); return; }
+
+      btn.disabled = true;
+      btn.textContent = 'Creating…';
+
+      try {
+        // Check if username already exists
+        const existing = await db.getWhere('users', 'username', 'eq', username);
+        if (existing.length > 0) {
+          showModalError(`Username "@${username}" is already taken. Choose a different one.`);
+          return;
+        }
+
+        // Insert new student into Supabase
+        await db.insert('users', {
+          full_name: name,
+          username:  username,
+          password:  password,
+          role:      'student',
+        });
+
+        // Show credentials screen
+        document.getElementById('createdUsername').textContent = username;
+        document.getElementById('createdPassword').textContent = password;
+        document.getElementById('addForm').style.display = 'none';
+        document.getElementById('addSuccess').style.display = 'block';
+
+        // Refresh table
+        await loadStudents();
+
+      } catch (err) {
+        showModalError('Something went wrong. Please try again.');
+        console.error(err);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Create account';
+      }
+    }
+
+    function showModalError(msg) {
+      const el = document.getElementById('addError');
+      el.textContent = msg;
+      el.classList.add('visible');
+      document.getElementById('addSubmitBtn').disabled = false;
+      document.getElementById('addSubmitBtn').textContent = 'Create account';
+    }
+
+    // ---- Delete modal ----
+    function openDeleteModal(id, name) {
+      deleteTargetId = id;
+      document.getElementById('deleteStudentName').textContent = name;
+      document.getElementById('deleteModal').classList.add('open');
+    }
+
+    function closeDeleteModal() {
+      document.getElementById('deleteModal').classList.remove('open');
+      deleteTargetId = null;
+    }
+
+    async function confirmDelete() {
+      if (!deleteTargetId) return;
+      try {
+        await db.delete('users', deleteTargetId);
+        closeDeleteModal();
+        showToast('Student removed.');
+        await loadStudents();
+      } catch (err) {
+        showToast('Failed to remove student.');
+        console.error(err);
+      }
+    }
+
+    // ---- Close modals on backdrop click ----
+    document.getElementById('addModal').addEventListener('click', e => { if (e.target.id === 'addModal') closeAddModal(); });
+    document.getElementById('deleteModal').addEventListener('click', e => { if (e.target.id === 'deleteModal') closeDeleteModal(); });
+
+    // ---- Toast ----
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      document.getElementById('toastMsg').textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2800);
+    }
+
+    // ---- Init ----
+    loadStudents();
+  </script>
+</body>
+</html>

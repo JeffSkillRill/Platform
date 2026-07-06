@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Test Builder — Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --teal:        #3adbba;
+      --teal-dark:   #2bc4a4;
+      --teal-darker: #1fa88c;
+      --teal-light:  #e8faf6;
+      --teal-mid:    #c0f2e8;
+      --navy:        #0d2137;
+      --bg:          #f2fbf8;
+      --surface:     #ffffff;
+      --text:        #0d2137;
+      --text-muted:  #4a7c6f;
+      --text-faint:  #8ab5ac;
+      --border:      #d4ede8;
+      --green:       #059669;
+      --green-light: #ecfdf5;
+      --amber:       #d97706;
+      --amber-light: #fffbeb;
+      --red:         #dc2626;
+      --red-light:   #fef2f2;
+      --sidebar-w:   230px;
+      --list-w:      280px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* ===== NAV SIDEBAR ===== */
+    .nav-sidebar {
+      width: var(--sidebar-w);
+      background: var(--teal);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      z-index: 100;
+    }
+
+    .sidebar-logo {
+      padding: 1.4rem 1.25rem 1.1rem;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+      margin-bottom: 0.5rem;
+    }
+
+    .logo-wrap { display: flex; align-items: center; gap: 9px; }
+
+    .logo-icon {
+      width: 32px; height: 32px;
+      background: var(--navy);
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .logo-icon svg { width: 17px; height: 17px; }
+
+    .logo-text {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1rem; font-weight: 700;
+      color: var(--navy); line-height: 1.1;
+    }
+    .logo-text small {
+      display: block; font-size: 0.6rem; font-weight: 500;
+      letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.6;
+    }
+
+    .nav-label {
+      font-size: 0.62rem; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: rgba(13,33,55,0.45);
+      padding: 0.75rem 1.25rem 0.3rem;
+    }
+
+    .nav-item {
+      display: flex; align-items: center; gap: 9px;
+      padding: 0.55rem 1.25rem;
+      font-size: 0.875rem; font-weight: 500;
+      color: rgba(13,33,55,0.6);
+      text-decoration: none; cursor: pointer;
+      transition: background 0.12s, color 0.12s;
+      position: relative;
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.25); color: var(--navy); }
+    .nav-item.active { background: rgba(255,255,255,0.35); color: var(--navy); font-weight: 600; }
+    .nav-item.active::before {
+      content: ""; position: absolute; left: 0; top: 0; bottom: 0;
+      width: 3px; background: var(--navy); border-radius: 0 2px 2px 0;
+    }
+    .nav-icon { width: 17px; height: 17px; flex-shrink: 0; opacity: 0.75; }
+    .nav-item.active .nav-icon { opacity: 1; }
+
+    .sidebar-bottom {
+      margin-top: auto; padding: 1rem 1rem 1.25rem;
+      border-top: 1px solid rgba(255,255,255,0.2);
+    }
+    .admin-chip { display: flex; align-items: center; gap: 9px; }
+    .admin-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--navy); display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem; font-weight: 700; color: var(--teal); flex-shrink: 0;
+    }
+    .admin-name { font-size: 0.8rem; font-weight: 600; color: var(--navy); }
+    .admin-role { font-size: 0.65rem; color: rgba(13,33,55,0.5); }
+
+    /* ===== MAIN LAYOUT ===== */
+    .main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* Top bar */
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 1.5rem;
+      height: 62px;
+      display: flex; align-items: center; gap: 1rem;
+      position: sticky; top: 0; z-index: 50;
+    }
+
+    .topbar-back {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 0.82rem; font-weight: 600;
+      color: var(--text-muted); text-decoration: none;
+      padding: 0.35rem 0.7rem;
+      border-radius: 7px;
+      transition: background 0.12s, color 0.12s;
+    }
+    .topbar-back:hover { background: var(--teal-light); color: var(--teal-darker); }
+    .topbar-back svg { width: 14px; height: 14px; }
+
+    .topbar-sep { width: 1px; height: 20px; background: var(--border); }
+
+    .topbar-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1rem; font-weight: 700; color: var(--text);
+    }
+
+    .test-name-input {
+      background: var(--teal-light);
+      border: 1.5px solid var(--teal-mid);
+      border-radius: 8px;
+      padding: 0.35rem 0.75rem;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.9rem; font-weight: 700;
+      color: var(--text);
+      outline: none; min-width: 220px;
+      transition: border-color 0.12s;
+    }
+    .test-name-input:focus { border-color: var(--teal); }
+
+    .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 0.65rem; }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: 'Inter', sans-serif; font-size: 0.82rem; font-weight: 600;
+      padding: 0.45rem 1rem; border-radius: 8px;
+      cursor: pointer; border: none; text-decoration: none;
+      transition: background 0.12s, transform 0.1s;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn svg { width: 14px; height: 14px; }
+
+    .btn-primary { background: var(--teal); color: var(--navy); }
+    .btn-primary:hover { background: var(--teal-dark); }
+    .btn-outline {
+      background: var(--teal-light); color: var(--teal-darker);
+      border: 1.5px solid var(--teal-mid);
+    }
+    .btn-outline:hover { background: var(--teal-mid); }
+    .btn-danger { background: var(--red-light); color: var(--red); border: 1.5px solid #fca5a5; }
+    .btn-danger:hover { background: #fecaca; }
+
+    /* ===== BODY: list panel + form panel ===== */
+    .builder-body {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* Question list panel */
+    .list-panel {
+      width: var(--list-w);
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      height: calc(100vh - 62px);
+      position: sticky;
+      top: 62px;
+      overflow: hidden;
+    }
+
+    /* Score estimator — signature element */
+    .score-estimator {
+      background: var(--navy);
+      padding: 1rem 1.1rem;
+      flex-shrink: 0;
+    }
+
+    .est-label {
+      font-size: 0.62rem; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: rgba(58,219,186,0.6);
+      margin-bottom: 0.5rem;
+    }
+
+    .est-score-row {
+      display: flex; align-items: baseline; gap: 4px; margin-bottom: 0.6rem;
+    }
+
+    .est-score {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 2rem; font-weight: 700; color: var(--teal);
+      line-height: 1; transition: all 0.3s ease;
+    }
+
+    .est-max { font-size: 0.8rem; color: rgba(255,255,255,0.3); }
+
+    .est-sections {
+      display: flex; gap: 0.75rem;
+    }
+
+    .est-section {
+      flex: 1;
+      background: rgba(58,219,186,0.08);
+      border-radius: 7px; padding: 0.45rem 0.6rem;
+    }
+
+    .est-sec-name {
+      font-size: 0.62rem; font-weight: 600; letter-spacing: 0.06em;
+      text-transform: uppercase; color: rgba(255,255,255,0.4);
+      margin-bottom: 2px;
+    }
+
+    .est-sec-val {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.95rem; font-weight: 700; color: #fff;
+    }
+
+    .est-sec-count {
+      font-size: 0.62rem; color: rgba(255,255,255,0.3);
+    }
+
+    /* Section tabs */
+    .section-tabs {
+      display: flex; border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .sec-tab {
+      flex: 1; padding: 0.65rem 0.5rem;
+      font-size: 0.75rem; font-weight: 600;
+      color: var(--text-muted); cursor: pointer;
+      border: none; background: none;
+      border-bottom: 2px solid transparent;
+      transition: color 0.12s, border-color 0.12s;
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+    }
+    .sec-tab:hover { color: var(--text); }
+    .sec-tab.active { color: var(--teal-darker); border-bottom-color: var(--teal); }
+
+    .sec-tab-count {
+      font-size: 0.62rem; font-weight: 700;
+      background: var(--teal-light); color: var(--teal-darker);
+      padding: 1px 6px; border-radius: 99px;
+    }
+    .sec-tab.active .sec-tab-count { background: var(--teal); color: var(--navy); }
+
+    /* Question list */
+    .q-list {
+      flex: 1; overflow-y: auto; padding: 0.75rem;
+      display: flex; flex-direction: column; gap: 0.4rem;
+    }
+
+    .q-chip {
+      display: flex; align-items: center; gap: 8px;
+      padding: 0.55rem 0.7rem;
+      border-radius: 9px; cursor: pointer;
+      border: 1.5px solid transparent;
+      background: var(--bg);
+      transition: background 0.12s, border-color 0.12s;
+    }
+    .q-chip:hover { background: var(--teal-light); border-color: var(--teal-mid); }
+    .q-chip.active { background: var(--teal-light); border-color: var(--teal); }
+
+    .q-num {
+      width: 22px; height: 22px;
+      border-radius: 6px;
+      background: var(--teal); color: var(--navy);
+      font-size: 0.65rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .q-chip-text {
+      flex: 1; min-width: 0;
+      font-size: 0.78rem; color: var(--text);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    .q-diff {
+      font-size: 0.6rem; font-weight: 700; padding: 1px 5px;
+      border-radius: 4px; flex-shrink: 0;
+    }
+    .q-diff.easy   { background: var(--green-light); color: var(--green); }
+    .q-diff.medium { background: var(--amber-light); color: var(--amber); }
+    .q-diff.hard   { background: var(--red-light); color: var(--red); }
+
+    .q-delete {
+      background: none; border: none; cursor: pointer;
+      color: var(--text-faint); padding: 2px; border-radius: 4px;
+      opacity: 0; transition: opacity 0.12s, color 0.12s;
+      flex-shrink: 0;
+    }
+    .q-chip:hover .q-delete { opacity: 1; }
+    .q-delete:hover { color: var(--red); }
+
+    .q-empty {
+      text-align: center; padding: 2rem 1rem;
+      color: var(--text-faint); font-size: 0.8rem; line-height: 1.6;
+    }
+
+    .list-footer {
+      padding: 0.75rem; border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .add-q-btn {
+      width: 100%; padding: 0.55rem;
+      background: var(--teal-light); color: var(--teal-darker);
+      border: 1.5px dashed var(--teal-mid);
+      border-radius: 9px; font-family: 'Inter', sans-serif;
+      font-size: 0.82rem; font-weight: 600;
+      cursor: pointer; display: flex; align-items: center;
+      justify-content: center; gap: 6px;
+      transition: background 0.12s, border-color 0.12s;
+    }
+    .add-q-btn:hover { background: var(--teal-mid); border-color: var(--teal); }
+    .add-q-btn svg { width: 14px; height: 14px; }
+
+    /* ===== FORM PANEL ===== */
+    .form-panel {
+      flex: 1; overflow-y: auto;
+      padding: 1.75rem 2rem 3rem;
+    }
+
+    .form-head {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.5rem;
+    }
+
+    .form-head-left h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.1rem; font-weight: 700; color: var(--text);
+      margin-bottom: 0.2rem;
+    }
+    .form-head-left p { font-size: 0.8rem; color: var(--text-muted); }
+
+    /* Form card */
+    .form-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+
+    .form-card-head {
+      padding: 0.8rem 1.25rem;
+      background: var(--teal-light);
+      border-bottom: 1px solid var(--teal-mid);
+      font-size: 0.75rem; font-weight: 700;
+      letter-spacing: 0.07em; text-transform: uppercase;
+      color: var(--teal-darker);
+      display: flex; align-items: center; gap: 7px;
+    }
+    .form-card-head svg { width: 13px; height: 13px; }
+
+    .form-card-body { padding: 1.25rem; }
+
+    /* Form fields */
+    .field { margin-bottom: 1.1rem; }
+    .field:last-child { margin-bottom: 0; }
+
+    .field-label {
+      display: block; font-size: 0.8rem; font-weight: 600;
+      color: var(--text); margin-bottom: 0.4rem;
+    }
+    .field-label span { color: var(--text-faint); font-weight: 400; }
+
+    textarea, input[type="text"], select {
+      width: 100%;
+      background: var(--teal-light);
+      border: 1.5px solid var(--teal-mid);
+      border-radius: 9px;
+      padding: 0.65rem 0.85rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem; color: var(--text);
+      outline: none;
+      transition: border-color 0.12s, box-shadow 0.12s;
+      resize: vertical;
+    }
+    textarea:focus, input[type="text"]:focus, select:focus {
+      border-color: var(--teal);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(58,219,186,0.15);
+    }
+    textarea::placeholder, input::placeholder { color: #9ecec5; }
+    select { cursor: pointer; }
+
+    textarea { min-height: 80px; }
+
+    /* Answer choices */
+    .choices-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem;
+    }
+
+    .choice-wrap {
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .choice-letter {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--teal-mid); color: var(--navy);
+      font-size: 0.72rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; cursor: pointer;
+      border: 2px solid transparent;
+      transition: background 0.12s, border-color 0.12s;
+    }
+
+    .choice-wrap.correct .choice-letter {
+      background: var(--teal);
+      border-color: var(--teal-darker);
+    }
+
+    .choice-input {
+      flex: 1; min-width: 0;
+    }
+
+    .choice-input input {
+      margin: 0; padding: 0.5rem 0.7rem;
+      font-size: 0.85rem;
+    }
+
+    .correct-hint {
+      font-size: 0.75rem; color: var(--text-muted);
+      margin-top: 0.5rem;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .correct-hint svg { width: 12px; height: 12px; color: var(--teal); }
+
+    /* Image upload */
+    .upload-zone {
+      border: 2px dashed var(--teal-mid);
+      border-radius: 10px; padding: 1.5rem;
+      text-align: center; cursor: pointer;
+      background: var(--teal-light);
+      transition: border-color 0.12s, background 0.12s;
+    }
+    .upload-zone:hover { border-color: var(--teal); background: var(--bg); }
+
+    .upload-zone svg { width: 28px; height: 28px; color: var(--text-faint); margin-bottom: 0.5rem; }
+    .upload-zone p { font-size: 0.82rem; color: var(--text-muted); }
+    .upload-zone small { font-size: 0.72rem; color: var(--text-faint); }
+
+    .img-preview {
+      display: none; position: relative;
+      border-radius: 10px; overflow: hidden;
+      border: 1.5px solid var(--teal-mid);
+    }
+    .img-preview img { width: 100%; max-height: 200px; object-fit: contain; display: block; }
+    .img-remove {
+      position: absolute; top: 6px; right: 6px;
+      background: rgba(13,33,55,0.7); color: #fff;
+      border: none; border-radius: 6px; padding: 3px 8px;
+      font-size: 0.72rem; cursor: pointer; font-family: 'Inter', sans-serif;
+    }
+
+    /* Meta row */
+    .meta-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+
+    /* Navigation bar at bottom of form */
+    .form-nav {
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px; padding: 1rem 1.25rem;
+    }
+
+    .form-nav-info { font-size: 0.8rem; color: var(--text-muted); }
+    .form-nav-info strong { color: var(--text); }
+
+    .form-nav-btns { display: flex; gap: 0.6rem; }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 1.5rem; right: 1.5rem;
+      background: var(--navy); color: #fff;
+      padding: 0.75rem 1.25rem; border-radius: 10px;
+      font-size: 0.85rem; font-weight: 500;
+      display: flex; align-items: center; gap: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      z-index: 300;
+      transform: translateY(80px); opacity: 0;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      pointer-events: none;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast svg { width: 16px; height: 16px; color: var(--teal); }
+
+    /* Publish banner */
+    .publish-bar {
+      background: var(--teal);
+      padding: 1rem 1.5rem;
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+    .publish-bar-text { font-size: 0.85rem; font-weight: 600; color: var(--navy); }
+    .publish-bar-text small { display: block; font-weight: 400; font-size: 0.75rem; opacity: 0.7; }
+
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  </style>
+</head>
+<body>
+
+  <!-- Nav sidebar -->
+  <aside class="nav-sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-wrap">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#3adbba" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2L2 7l10 5 10-5-10-5"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div class="logo-text">SAT Prep <small>Admin panel</small></div>
+      </div>
+    </div>
+
+    <p class="nav-label">Main</p>
+    <a class="nav-item" href="admin-dashboard.html">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+      Dashboard
+    </a>
+    <a class="nav-item" href="admin-students.html">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      Students
+    </a>
+    <a class="nav-item active" href="admin-tests.html">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      Tests
+    </a>
+    <a class="nav-item" href="admin-leaderboard.html">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+      Leaderboard
+    </a>
+
+    <div class="sidebar-bottom">
+      <div class="admin-chip">
+        <div class="admin-avatar">JR</div>
+        <div>
+          <div class="admin-name">Jeff R.</div>
+          <div class="admin-role">Administrator</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <a class="topbar-back" href="admin-dashboard.html">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        Dashboard
+      </a>
+      <div class="topbar-sep"></div>
+      <span class="topbar-title">Test builder</span>
+      <input class="test-name-input" type="text" id="testNameInput" placeholder="Test name e.g. SAT Practice Test 7" value=""/>
+      <div class="topbar-right">
+        <button class="btn btn-outline" onclick="saveDraft()">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
+          Save draft
+        </button>
+        <button class="btn btn-primary" onclick="publishTest()">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+          Publish test
+        </button>
+      </div>
+    </div>
+
+    <!-- Builder body -->
+    <div class="builder-body">
+
+      <!-- Question list panel -->
+      <div class="list-panel">
+
+        <!-- Module breakdown (signature element) -->
+        <div class="score-estimator">
+          <div class="est-label">⬤ SAT module breakdown</div>
+          <div class="est-score-row">
+            <span class="est-score" id="estTotal">0</span>
+            <span class="est-max">/ 98 questions</span>
+          </div>
+          <div class="est-sections">
+            <div class="est-section">
+              <div class="est-sec-name">R&amp;W</div>
+              <div class="est-sec-val" id="estRW">0</div>
+              <div class="est-sec-count" id="estRWCount">/ 54 needed</div>
+            </div>
+            <div class="est-section">
+              <div class="est-sec-name">Math</div>
+              <div class="est-sec-val" id="estMath">0</div>
+              <div class="est-sec-count" id="estMathCount">/ 44 needed</div>
+            </div>
+          </div>
+          <!-- Per-module progress bars -->
+          <div style="margin-top:0.75rem;display:flex;flex-direction:column;gap:5px;" id="moduleProgress"></div>
+        </div>
+
+        <!-- Module tabs — 4 separate modules with caps -->
+        <div style="border-bottom:1px solid var(--border);flex-shrink:0;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);">
+            <button class="mod-tab active" id="tab-rw1" onclick="switchTab('rw1')" style="padding:0.5rem 0.4rem;font-size:0.68rem;font-weight:700;border:none;background:none;cursor:pointer;color:var(--teal-darker);border-bottom:2px solid var(--teal);border-right:1px solid var(--border);">
+              R&amp;W · Mod 1
+              <span class="mod-tab-count" id="count-rw1" style="display:block;font-size:0.62rem;font-weight:600;color:var(--text-faint);">0 / 27</span>
+            </button>
+            <button class="mod-tab" id="tab-rw2" onclick="switchTab('rw2')" style="padding:0.5rem 0.4rem;font-size:0.68rem;font-weight:700;border:none;background:none;cursor:pointer;color:var(--text-muted);border-bottom:2px solid transparent;">
+              R&amp;W · Mod 2
+              <span class="mod-tab-count" id="count-rw2" style="display:block;font-size:0.62rem;font-weight:600;color:var(--text-faint);">0 / 27</span>
+            </button>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;">
+            <button class="mod-tab" id="tab-math1" onclick="switchTab('math1')" style="padding:0.5rem 0.4rem;font-size:0.68rem;font-weight:700;border:none;background:none;cursor:pointer;color:var(--text-muted);border-bottom:2px solid transparent;border-right:1px solid var(--border);">
+              Math · Mod 3
+              <span class="mod-tab-count" id="count-math1" style="display:block;font-size:0.62rem;font-weight:600;color:var(--text-faint);">0 / 22</span>
+            </button>
+            <button class="mod-tab" id="tab-math2" onclick="switchTab('math2')" style="padding:0.5rem 0.4rem;font-size:0.68rem;font-weight:700;border:none;background:none;cursor:pointer;color:var(--text-muted);border-bottom:2px solid transparent;">
+              Math · Mod 4
+              <span class="mod-tab-count" id="count-math2" style="display:block;font-size:0.62rem;font-weight:600;color:var(--text-faint);">0 / 22</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Question chips list -->
+        <div class="q-list" id="qList"></div>
+
+        <!-- Add question button -->
+        <div class="list-footer">
+          <button class="add-q-btn" onclick="newQuestion()" id="addQBtn">
+            <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+            Add question
+          </button>
+          <div id="limitWarning" style="display:none;margin-top:0.5rem;background:var(--amber-light);border:1px solid #fcd34d;border-radius:7px;padding:0.5rem 0.7rem;font-size:0.72rem;color:var(--amber);text-align:center;"></div>
+        </div>
+      </div>
+
+      <!-- Form panel -->
+      <div class="form-panel" id="formPanel">
+
+        <!-- Empty state -->
+        <div id="emptyState" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;padding:2rem;">
+          <div style="width:64px;height:64px;background:var(--teal-light);border-radius:16px;display:flex;align-items:center;justify-content:center;margin-bottom:1.25rem;">
+            <svg width="30" height="30" fill="none" stroke="#3adbba" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          </div>
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:0.5rem;">No questions yet</div>
+          <div style="font-size:0.85rem;color:var(--text-muted);max-width:280px;line-height:1.6;margin-bottom:1.5rem;">Click "Add question" to start building your test. Each question has a stem, four choices, and a correct answer.</div>
+          <button class="btn btn-primary" onclick="newQuestion()" style="padding:0.6rem 1.5rem;">
+            <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+            Add first question
+          </button>
+        </div>
+
+        <!-- Question form (hidden until a question is selected) -->
+        <div id="questionForm" style="display:none;">
+
+          <div class="form-head">
+            <div class="form-head-left">
+              <h2 id="formHeadTitle">Question 1</h2>
+              <p id="formHeadSub">Math section</p>
+            </div>
+            <button class="btn btn-danger" onclick="deleteCurrentQuestion()">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              Delete
+            </button>
+          </div>
+
+          <!-- Question meta -->
+          <div class="form-card">
+            <div class="form-card-head">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+              Question settings
+            </div>
+            <div class="form-card-body">
+              <div class="meta-row">
+                <div class="field">
+                  <label class="field-label">Module</label>
+                  <div id="qModuleDisplay" style="background:var(--teal-light);border:1.5px solid var(--teal-mid);border-radius:9px;padding:0.65rem 0.85rem;font-size:0.88rem;font-weight:600;color:var(--teal-darker);">—</div>
+                </div>
+                <div class="field">
+                  <label class="field-label">Difficulty</label>
+                  <select id="qDifficulty">
+                    <option value="easy">Easy</option>
+                    <option value="medium">Medium</option>
+                    <option value="hard">Hard</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Question stem -->
+          <div class="form-card">
+            <div class="form-card-head">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h7"/></svg>
+              Question text
+            </div>
+            <div class="form-card-body">
+              <div class="field">
+                <label class="field-label">Question stem <span>(required)</span></label>
+                <textarea id="qStem" placeholder="Type the full question here. For math, you can use plain text — e.g. 'If 2x + 3 = 11, what is the value of x?'" rows="4"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Image upload -->
+          <div class="form-card">
+            <div class="form-card-head">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              Image <span style="font-weight:400;color:var(--text-faint);text-transform:none;font-size:0.7rem;">&nbsp;— optional (graphs, passages, figures)</span>
+            </div>
+            <div class="form-card-body">
+              <div id="uploadZone" class="upload-zone" onclick="document.getElementById('imgInput').click()">
+                <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                <p>Click to upload an image</p>
+                <small>PNG, JPG, GIF up to 5MB</small>
+              </div>
+              <div id="imgPreview" class="img-preview">
+                <img id="previewImg" src="" alt="Question image"/>
+                <button class="img-remove" onclick="removeImage()">Remove</button>
+              </div>
+              <input type="file" id="imgInput" accept="image/*" style="display:none;" onchange="handleImageUpload(event)"/>
+            </div>
+          </div>
+
+          <!-- Answer choices -->
+          <div class="form-card">
+            <div class="form-card-head">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              Answer choices — click a letter to mark it as correct
+            </div>
+            <div class="form-card-body">
+              <div class="choices-grid" id="choicesGrid">
+                <!-- Rendered by JS -->
+              </div>
+              <div class="correct-hint">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span id="correctHintText">No correct answer selected yet. Click a letter circle to mark it.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Form navigation -->
+          <div class="form-nav">
+            <div class="form-nav-info">
+              Question <strong id="navCurrent">1</strong> of <strong id="navTotal">1</strong>
+            </div>
+            <div class="form-nav-btns">
+              <button class="btn btn-outline" onclick="prevQuestion()" id="btnPrev">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                Previous
+              </button>
+              <button class="btn btn-outline" onclick="saveAndNext()" id="btnNext">
+                Save &amp; next
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+    <span id="toastMsg">Saved</span>
+  </div>
+
+  <script>
+    // ================================================================
+    // DATA STRUCTURE
+    // questions are now stored per module, not in one flat array:
+    // moduleQuestions = {
+    //   rw1:   [ {id, module:'rw1',  difficulty, stem, image, choices, correct}, ... ],
+    //   rw2:   [ ... ],
+    //   math1: [ ... ],
+    //   math2: [ ... ],
+    // }
+    // ================================================================
+
+    const MODULE_CONFIG = {
+      rw1:   { label:'R&W — Module 1',  section:'rw',   cap:27, time:'32 min', tabId:'tab-rw1'   },
+      rw2:   { label:'R&W — Module 2',  section:'rw',   cap:27, time:'32 min', tabId:'tab-rw2'   },
+      math1: { label:'Math — Module 3', section:'math', cap:22, time:'35 min', tabId:'tab-math1' },
+      math2: { label:'Math — Module 4', section:'math', cap:22, time:'35 min', tabId:'tab-math2' },
+    };
+
+    let moduleQuestions = { rw1:[], rw2:[], math1:[], math2:[] };
+    let activeTab       = 'rw1';    // which module tab is showing
+    let currentQIndex   = null;     // index within activeTab's array
+    let correctAnswer   = null;
+
+    const LETTERS = ['A','B','C','D'];
+
+    // ---- Flat list of all questions (for publish) ----
+    function allQuestions() {
+      return [
+        ...moduleQuestions.rw1,
+        ...moduleQuestions.rw2,
+        ...moduleQuestions.math1,
+        ...moduleQuestions.math2,
+      ];
+    }
+
+    // ---- Load saved draft ----
+    function loadDraft() {
+      const saved = localStorage.getItem('sat_draft_test');
+      if (saved) {
+        const data = JSON.parse(saved);
+        moduleQuestions = data.moduleQuestions || { rw1:[], rw2:[], math1:[], math2:[] };
+        document.getElementById('testNameInput').value = data.name || '';
+        renderList();
+        updateEstimator();
+      }
+    }
+
+    // ============================================================
+    // PASTE YOUR SUPABASE CREDENTIALS HERE
+    // ============================================================
+   const SUPABASE_URL     = 'https://lsbpskmzffmaztczlokh.supabase.co';       // e.g. https://xyzxyz.supabase.co
+   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxzYnBza216ZmZtYXp0Y3psb2toIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI2OTc5NzMsImV4cCI6MjA5ODI3Mzk3M30.zRtly7a6XPKoU6BaZ2eftQxxOTFSUkw1wQ8A6-H1-tI'; // starts with eyJ...
+
+    const db = {
+      async insert(table, data) {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+            'Content-Type': 'application/json', 'Prefer': 'return=representation'
+          },
+          body: JSON.stringify(data)
+        });
+        if (!res.ok) throw new Error(await res.text());
+        return res.json();
+      }
+    };
+
+    // ---- Save draft ----
+    function saveDraft() {
+      const name = document.getElementById('testNameInput').value.trim();
+      if (!name) { showToast('Please enter a test name first.'); return; }
+      if (currentQIndex !== null) collectCurrentForm();
+      localStorage.setItem('sat_draft_test', JSON.stringify({ name, moduleQuestions }));
+      showToast('Draft saved locally ✓');
+    }
+
+    // ---- Publish to Supabase ----
+    async function publishTest() {
+      const name = document.getElementById('testNameInput').value.trim();
+      if (!name) { showToast('Please enter a test name first.'); return; }
+      const all = allQuestions();
+      if (all.length === 0) { showToast('Add at least one question before publishing.'); return; }
+      if (currentQIndex !== null) collectCurrentForm();
+
+      const incomplete = all.filter(q =>
+        !q.stem.trim() || q.choices.some(c => !c.trim()) || q.correct === null
+      );
+      if (incomplete.length > 0) {
+        showToast(`${incomplete.length} question(s) are incomplete.`); return;
+      }
+
+      const btn = document.querySelector('.btn-primary');
+      btn.disabled = true; btn.textContent = 'Publishing…';
+
+      try {
+        const [test] = await db.insert('tests', { name, status:'published' });
+
+        // Insert questions with order_num tracking per module
+        let orderNum = 0;
+        for (const [modKey, qs] of Object.entries(moduleQuestions)) {
+          const cfg = MODULE_CONFIG[modKey];
+          for (const q of qs) {
+            await db.insert('questions', {
+              test_id:    test.id,
+              section:    cfg.section,
+              module_key: modKey,           // rw1 / rw2 / math1 / math2
+              difficulty: q.difficulty,
+              stem:       q.stem,
+              image_url:  q.image || null,
+              choices:    q.choices,
+              correct:    q.correct,
+              order_num:  orderNum++
+            });
+          }
+        }
+
+        localStorage.removeItem('sat_draft_test');
+        showToast(`"${name}" published — ${all.length} questions saved ✓`);
+        setTimeout(() => { window.location.href = 'admin-dashboard.html'; }, 1800);
+
+      } catch(err) {
+        showToast('Failed to publish. Check your Supabase credentials.');
+        console.error(err);
+        btn.disabled = false; btn.textContent = 'Publish test';
+      }
+    }
+
+    // ---- Switch module tab ----
+    function switchTab(tab) {
+      if (currentQIndex !== null) collectCurrentForm();
+      activeTab     = tab;
+      currentQIndex = null;
+
+      // Update tab styles
+      Object.keys(MODULE_CONFIG).forEach(key => {
+        const el = document.getElementById('tab-' + key);
+        if (!el) return;
+        const isActive = key === tab;
+        el.style.color        = isActive ? 'var(--teal-darker)' : 'var(--text-muted)';
+        el.style.borderBottom = isActive ? '2px solid var(--teal)' : '2px solid transparent';
+        el.style.background   = isActive ? 'var(--teal-light)' : 'none';
+      });
+
+      // Hide form, show empty or last question
+      document.getElementById('emptyState').style.display    = 'flex';
+      document.getElementById('questionForm').style.display  = 'none';
+
+      renderList();
+      updateAddButton();
+    }
+
+    // ---- Check if current module is at cap ----
+    function isAtCap(modKey) {
+      const cfg = MODULE_CONFIG[modKey];
+      return moduleQuestions[modKey].length >= cfg.cap;
+    }
+
+    // ---- Update add button state ----
+    function updateAddButton() {
+      const btn     = document.getElementById('addQBtn');
+      const warnEl  = document.getElementById('limitWarning');
+      const cfg     = MODULE_CONFIG[activeTab];
+      const count   = moduleQuestions[activeTab].length;
+      const at_cap  = count >= cfg.cap;
+
+      btn.disabled      = at_cap;
+      btn.style.opacity = at_cap ? '0.4' : '1';
+      btn.style.cursor  = at_cap ? 'not-allowed' : 'pointer';
+
+      if (at_cap) {
+        warnEl.style.display = 'block';
+        warnEl.textContent   = `Module full: ${cfg.cap}/${cfg.cap} questions reached. Switch to another module.`;
+      } else {
+        warnEl.style.display = 'none';
+      }
+    }
+
+    // ---- Create new question in active module ----
+    function newQuestion() {
+      if (isAtCap(activeTab)) {
+        showToast(`This module is full (${MODULE_CONFIG[activeTab].cap} questions max).`);
+        return;
+      }
+      if (currentQIndex !== null) collectCurrentForm();
+
+      const q = {
+        id:         'q_' + Date.now(),
+        module:     activeTab,
+        difficulty: 'medium',
+        stem:       '',
+        image:      null,
+        choices:    ['','','',''],
+        correct:    null,
+      };
+
+      moduleQuestions[activeTab].push(q);
+      currentQIndex = moduleQuestions[activeTab].length - 1;
+      renderList();
+      updateEstimator();
+      loadQuestionIntoForm(currentQIndex);
+    }
+
+    // ---- Load question into form ----
+    function loadQuestionIntoForm(idx) {
+      const q = moduleQuestions[activeTab][idx];
+      if (!q) return;
+
+      currentQIndex = idx;
+      correctAnswer = q.correct;
+      const cfg     = MODULE_CONFIG[activeTab];
+
+      document.getElementById('emptyState').style.display   = 'none';
+      document.getElementById('questionForm').style.display = 'block';
+
+      document.getElementById('formHeadTitle').textContent = `Question ${idx + 1}`;
+      document.getElementById('formHeadSub').textContent   = `${cfg.label} — ${cfg.time}`;
+      document.getElementById('qModuleDisplay').textContent = cfg.label;
+      document.getElementById('qDifficulty').value          = q.difficulty;
+      document.getElementById('qStem').value                = q.stem;
+
+      // Image
+      const preview = document.getElementById('imgPreview');
+      const zone    = document.getElementById('uploadZone');
+      if (q.image) {
+        document.getElementById('previewImg').src = q.image;
+        preview.style.display = 'block'; zone.style.display = 'none';
+      } else {
+        preview.style.display = 'none'; zone.style.display = 'block';
+      }
+
+      renderChoices(q.choices, q.correct);
+
+      // Nav counters
+      const modQs = moduleQuestions[activeTab];
+      document.getElementById('navCurrent').textContent = idx + 1;
+      document.getElementById('navTotal').textContent   = modQs.length;
+      document.getElementById('btnPrev').disabled       = idx === 0;
+
+      // Highlight chip
+      document.querySelectorAll('.q-chip').forEach(c => c.classList.remove('active'));
+      document.querySelectorAll('.q-chip').forEach(c => {
+        if (c.dataset.qid === q.id) c.classList.add('active');
+      });
+    }
+
+    // ---- Render choice inputs ----
+    function renderChoices(choices, correct) {
+      const grid = document.getElementById('choicesGrid');
+      grid.innerHTML = LETTERS.map((letter, i) => `
+        <div class="choice-wrap ${correct === i ? 'correct' : ''}" id="choiceWrap${i}">
+          <div class="choice-letter" onclick="setCorrect(${i})">${letter}</div>
+          <div class="choice-input">
+            <input type="text" id="choice${i}" placeholder="Choice ${letter}" value="${escHtml(choices[i]||'')}" />
+          </div>
+        </div>`).join('');
+      updateCorrectHint(correct);
+    }
+
+    function escHtml(str) {
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function setCorrect(idx) {
+      correctAnswer = idx;
+      LETTERS.forEach((_,i) => {
+        document.getElementById('choiceWrap'+i).classList.toggle('correct', i===idx);
+      });
+      updateCorrectHint(idx);
+    }
+
+    function updateCorrectHint(correct) {
+      const hint = document.getElementById('correctHintText');
+      if (correct === null || correct === undefined) {
+        hint.textContent = 'No correct answer selected. Click a letter circle to mark it.';
+        hint.style.color = 'var(--amber)';
+      } else {
+        hint.textContent = `Correct answer: Choice ${LETTERS[correct]}`;
+        hint.style.color = 'var(--green)';
+      }
+    }
+
+    // ---- Collect current form into moduleQuestions ----
+    function collectCurrentForm() {
+      if (currentQIndex === null) return;
+      const q = moduleQuestions[activeTab][currentQIndex];
+      if (!q) return;
+      q.difficulty = document.getElementById('qDifficulty').value;
+      q.stem       = document.getElementById('qStem').value;
+      q.correct    = correctAnswer;
+      q.choices    = LETTERS.map((_,i) => document.getElementById('choice'+i)?.value || '');
+    }
+
+    // ---- Navigate within module ----
+    function saveAndNext() {
+      collectCurrentForm();
+      renderList();
+      const modQs = moduleQuestions[activeTab];
+      if (currentQIndex < modQs.length - 1) {
+        loadQuestionIntoForm(currentQIndex + 1);
+      } else {
+        if (isAtCap(activeTab)) {
+          showToast(`Module full (${MODULE_CONFIG[activeTab].cap} questions). Switch to next module to continue.`);
+        } else {
+          newQuestion();
+        }
+      }
+    }
+
+    function prevQuestion() {
+      if (currentQIndex > 0) {
+        collectCurrentForm();
+        renderList();
+        loadQuestionIntoForm(currentQIndex - 1);
+      }
+    }
+
+    // ---- Delete current question ----
+    function deleteCurrentQuestion() {
+      if (currentQIndex === null) return;
+      if (!confirm('Delete this question?')) return;
+      moduleQuestions[activeTab].splice(currentQIndex, 1);
+      renderList();
+      updateEstimator();
+      updateAddButton();
+      const modQs = moduleQuestions[activeTab];
+      if (modQs.length === 0) {
+        currentQIndex = null;
+        document.getElementById('emptyState').style.display  = 'flex';
+        document.getElementById('questionForm').style.display = 'none';
+      } else {
+        loadQuestionIntoForm(Math.min(currentQIndex, modQs.length - 1));
+      }
+    }
+
+    // ---- Delete from chip list ----
+    function deleteQuestion(idx) {
+      if (!confirm('Delete this question?')) return;
+      moduleQuestions[activeTab].splice(idx, 1);
+      if (currentQIndex === idx) {
+        currentQIndex = null;
+        const modQs = moduleQuestions[activeTab];
+        if (modQs.length > 0) loadQuestionIntoForm(Math.max(0, idx-1));
+        else {
+          document.getElementById('emptyState').style.display  = 'flex';
+          document.getElementById('questionForm').style.display = 'none';
+        }
+      } else if (currentQIndex !== null && currentQIndex > idx) {
+        currentQIndex--;
+      }
+      renderList();
+      updateEstimator();
+      updateAddButton();
+    }
+
+    // ---- Select question from chip ----
+    function selectQuestion(idx) {
+      if (currentQIndex !== null) collectCurrentForm();
+      loadQuestionIntoForm(idx);
+    }
+
+    // ---- Render chip list for active module ----
+    function renderList() {
+      const list   = document.getElementById('qList');
+      const modQs  = moduleQuestions[activeTab];
+      const cfg    = MODULE_CONFIG[activeTab];
+
+      // Update all tab counts
+      Object.keys(MODULE_CONFIG).forEach(key => {
+        const countEl = document.getElementById('count-' + key);
+        if (countEl) {
+          const count = moduleQuestions[key].length;
+          const cap   = MODULE_CONFIG[key].cap;
+          countEl.textContent = `${count} / ${cap}`;
+          countEl.style.color = count >= cap ? 'var(--green)' : count > 0 ? 'var(--amber)' : 'var(--text-faint)';
+        }
+      });
+
+      if (modQs.length === 0) {
+        list.innerHTML = `
+          <div class="q-empty">
+            No questions in ${cfg.label} yet.<br>
+            <span style="color:var(--teal-darker);font-weight:600;">Limit: ${cfg.cap} questions · ${cfg.time}</span>
+          </div>`;
+        return;
+      }
+
+      list.innerHTML = modQs.map((q, i) => {
+        const isActive = i === currentQIndex;
+        const preview  = q.stem.trim() ? q.stem.slice(0,46) + (q.stem.length > 46 ? '…':'') : 'Empty question';
+        return `
+          <div class="q-chip ${isActive?'active':''}" onclick="selectQuestion(${i})" data-qid="${q.id}">
+            <div class="q-num">${i+1}</div>
+            <div class="q-chip-text">${preview}</div>
+            <span class="q-diff ${q.difficulty}">${q.difficulty[0].toUpperCase()}</span>
+            <button class="q-delete" onclick="event.stopPropagation();deleteQuestion(${i})" title="Delete">
+              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>`;
+      }).join('');
+    }
+
+    // ---- Update estimator panel ----
+    const MOD_TARGETS = [
+      { key:'rw1',   label:'R&W Mod 1',  target:27 },
+      { key:'rw2',   label:'R&W Mod 2',  target:27 },
+      { key:'math1', label:'Math Mod 3', target:22 },
+      { key:'math2', label:'Math Mod 4', target:22 },
+    ];
+
+    function updateEstimator() {
+      const rwCount   = moduleQuestions.rw1.length + moduleQuestions.rw2.length;
+      const mathCount = moduleQuestions.math1.length + moduleQuestions.math2.length;
+      const total     = rwCount + mathCount;
+
+      document.getElementById('estTotal').textContent     = total;
+      document.getElementById('estRW').textContent        = rwCount;
+      document.getElementById('estMath').textContent      = mathCount;
+      document.getElementById('estRWCount').textContent   = '/ 54 needed';
+      document.getElementById('estMathCount').textContent = '/ 44 needed';
+
+      const progEl = document.getElementById('moduleProgress');
+      progEl.innerHTML = MOD_TARGETS.map(mod => {
+        const count = moduleQuestions[mod.key].length;
+        const pct   = Math.min((count / mod.target) * 100, 100);
+        const done  = count >= mod.target;
+        const color = done ? '#3adbba' : count > 0 ? '#fbbf24' : 'rgba(255,255,255,0.1)';
+        return `
+          <div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+              <span style="font-size:0.58rem;font-weight:600;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:0.06em;">${mod.label}</span>
+              <span style="font-size:0.6rem;font-weight:700;color:${done?'#3adbba':'rgba(255,255,255,0.3)'};">${count}/${mod.target}</span>
+            </div>
+            <div style="height:4px;background:rgba(255,255,255,0.08);border-radius:99px;overflow:hidden;">
+              <div style="height:100%;width:${pct}%;background:${color};border-radius:99px;transition:width 0.3s;"></div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    // ---- Image upload ----
+    function handleImageUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      if (file.size > 5*1024*1024) { showToast('Image must be under 5MB.'); return; }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const base64 = e.target.result;
+        if (currentQIndex !== null) moduleQuestions[activeTab][currentQIndex].image = base64;
+        document.getElementById('previewImg').src       = base64;
+        document.getElementById('imgPreview').style.display = 'block';
+        document.getElementById('uploadZone').style.display = 'none';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removeImage() {
+      if (currentQIndex !== null) moduleQuestions[activeTab][currentQIndex].image = null;
+      document.getElementById('imgPreview').style.display = 'none';
+      document.getElementById('uploadZone').style.display = 'block';
+      document.getElementById('imgInput').value = '';
+    }
+
+    // ---- Toast ----
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      document.getElementById('toastMsg').textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2800);
+    }
+
+    // ---- Init ----
+    loadDraft();
+    switchTab('rw1');
+    updateEstimator();
+  </script>
+</body>
+</html>
