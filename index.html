@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SAT Prep Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --navy: #0b1628;
+      --navy-soft: #13233a;
+      --teal: #3adbba;
+      --teal-dark: #20b99b;
+      --mint: #e8faf6;
+      --green: #059669;
+      --amber: #d97706;
+      --paper: #f7faf8;
+      --surface: #ffffff;
+      --text: #0d2137;
+      --muted: #5f766f;
+      --border: #dceae6;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: 'Inter', sans-serif;
+      color: var(--text);
+      background: var(--paper);
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .hero {
+      min-height: 82vh;
+      background-image:
+        linear-gradient(90deg, rgba(11,22,40,0.96) 0%, rgba(11,22,40,0.88) 34%, rgba(11,22,40,0.22) 66%, rgba(11,22,40,0.08) 100%),
+        url('assets/home-hero.png');
+      background-size: cover;
+      background-position: center;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .nav {
+      width: min(1120px, calc(100% - 40px));
+      margin: 0 auto;
+      min-height: 72px;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      background: var(--teal);
+      color: var(--navy);
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+    }
+
+    .nav-links {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+    }
+
+    .nav-link,
+    .nav-button {
+      text-decoration: none;
+      font-size: 0.86rem;
+      font-weight: 700;
+      border-radius: 8px;
+      padding: 0.55rem 0.9rem;
+      min-height: 38px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+    }
+
+    .nav-link {
+      color: rgba(255,255,255,0.82);
+    }
+
+    .nav-link:hover {
+      color: #ffffff;
+      background: rgba(255,255,255,0.08);
+    }
+
+    .nav-button {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #ffffff;
+    }
+
+    .nav-button:hover {
+      background: rgba(255,255,255,0.18);
+    }
+
+    .hero-inner {
+      width: min(1120px, calc(100% - 40px));
+      margin: 0 auto;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      padding: 3.25rem 0 4.25rem;
+    }
+
+    .hero-copy {
+      width: min(600px, 100%);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--teal);
+      font-size: 0.76rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 1rem;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--teal);
+    }
+
+    h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 4rem;
+      line-height: 1.02;
+      font-weight: 700;
+      max-width: 620px;
+      margin-bottom: 1.1rem;
+    }
+
+    .hero-text {
+      max-width: 550px;
+      color: rgba(255,255,255,0.76);
+      font-size: 1.05rem;
+      line-height: 1.7;
+      margin-bottom: 1.6rem;
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-bottom: 2rem;
+    }
+
+    .btn {
+      min-height: 46px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border-radius: 8px;
+      border: 0;
+      padding: 0.75rem 1.15rem;
+      font-size: 0.92rem;
+      font-weight: 800;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: var(--teal);
+      color: var(--navy);
+    }
+
+    .btn-primary:hover {
+      background: var(--teal-dark);
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.1);
+      color: #ffffff;
+      border: 1px solid rgba(255,255,255,0.22);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.16);
+    }
+
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.75rem;
+      max-width: 560px;
+    }
+
+    .hero-stat {
+      border-top: 1px solid rgba(255,255,255,0.22);
+      padding-top: 0.85rem;
+    }
+
+    .hero-stat strong {
+      display: block;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.35rem;
+      color: #ffffff;
+      margin-bottom: 0.2rem;
+    }
+
+    .hero-stat span {
+      font-size: 0.76rem;
+      color: rgba(255,255,255,0.62);
+      line-height: 1.45;
+    }
+
+    .section {
+      width: min(1120px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 3rem 0;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .section-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.65rem;
+      line-height: 1.2;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .section-copy {
+      max-width: 460px;
+      color: var(--muted);
+      font-size: 0.94rem;
+      line-height: 1.65;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1rem;
+    }
+
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.15rem;
+      min-height: 190px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .feature-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      background: var(--mint);
+      color: var(--teal-dark);
+    }
+
+    .feature-icon svg {
+      width: 19px;
+      height: 19px;
+    }
+
+    .feature-card h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.02rem;
+      line-height: 1.25;
+      color: var(--text);
+    }
+
+    .feature-card p {
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1.6;
+    }
+
+    .login-band {
+      background: var(--navy);
+      color: #ffffff;
+    }
+
+    .login-inner {
+      width: min(1120px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 2.75rem 0;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 2rem;
+      align-items: center;
+    }
+
+    .login-inner h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.55rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .login-inner p {
+      color: rgba(255,255,255,0.66);
+      font-size: 0.94rem;
+      line-height: 1.6;
+      max-width: 620px;
+    }
+
+    .login-actions {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    footer {
+      background: #ffffff;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-inner {
+      width: min(1120px, calc(100% - 40px));
+      margin: 0 auto;
+      min-height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      text-decoration: none;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .footer-links a:hover {
+      color: var(--teal-dark);
+    }
+
+    @media (max-width: 920px) {
+      h1 {
+        font-size: 3rem;
+      }
+
+      .feature-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .login-inner {
+        grid-template-columns: 1fr;
+      }
+
+      .login-actions {
+        justify-content: flex-start;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .hero {
+        min-height: 78vh;
+        background-position: 62% center;
+      }
+
+      .nav {
+        width: min(100% - 28px, 1120px);
+        min-height: 64px;
+      }
+
+      .nav-link {
+        display: none;
+      }
+
+      .nav-button {
+        padding: 0.5rem 0.72rem;
+        font-size: 0.78rem;
+      }
+
+      .hero-inner,
+      .section,
+      .login-inner,
+      .footer-inner {
+        width: min(100% - 28px, 1120px);
+      }
+
+      .hero-inner {
+        align-items: flex-end;
+        padding: 2rem 0 3rem;
+      }
+
+      h1 {
+        font-size: 2.35rem;
+      }
+
+      .hero-text {
+        font-size: 0.96rem;
+      }
+
+      .hero-stats {
+        grid-template-columns: 1fr;
+      }
+
+      .section-head {
+        display: block;
+      }
+
+      .section-copy {
+        margin-top: 0.7rem;
+      }
+
+      .feature-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .footer-inner {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 1.25rem 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <nav class="nav" aria-label="Main navigation">
+      <a class="brand" href="index.html">
+        <span class="brand-mark">S</span>
+        <span>SAT Prep</span>
+      </a>
+      <div class="nav-links">
+        <a class="nav-link" href="#platform">Platform</a>
+        <a class="nav-link" href="admin-login.html">Admin</a>
+        <a class="nav-button" href="student-login.html">Student login</a>
+      </div>
+    </nav>
+
+    <div class="hero-inner">
+      <div class="hero-copy">
+        <p class="eyebrow">Digital SAT preparation</p>
+        <h1>SAT Prep Platform</h1>
+        <p class="hero-text">
+          Practice full SAT-style tests, review every answer, track your score history,
+          and see how your progress compares on the class leaderboard.
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="student-login.html">
+            Student login
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6"/></svg>
+          </a>
+          <a class="btn btn-secondary" href="admin-login.html">Admin access</a>
+        </div>
+        <div class="hero-stats" aria-label="Platform highlights">
+          <div class="hero-stat">
+            <strong>98</strong>
+            <span>questions in a complete SAT-style test</span>
+          </div>
+          <div class="hero-stat">
+            <strong>4</strong>
+            <span>test modules matching the digital format</span>
+          </div>
+          <div class="hero-stat">
+            <strong>1600</strong>
+            <span>score tracking across attempts</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="section" id="platform">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow" style="color:var(--teal-dark);margin-bottom:0.7rem;">What students get</p>
+          <h2 class="section-title">A focused place to practice, submit, and improve.</h2>
+        </div>
+        <p class="section-copy">
+          Students can take assigned tests, save progress while working, review completed attempts,
+          and follow their score growth from the dashboard.
+        </p>
+      </div>
+
+      <div class="feature-grid">
+        <article class="feature-card">
+          <div class="feature-icon">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6M7 3h6l4 4v14H7V3z"/></svg>
+          </div>
+          <h2>Assigned tests</h2>
+          <p>Students open published practice tests and work through Reading & Writing and Math modules.</p>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z"/></svg>
+          </div>
+          <h2>Timed practice</h2>
+          <p>Module timers, question navigation, and saved answers keep the test flow close to the real exam.</p>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 13 4 4L19 7"/><path stroke-linecap="round" stroke-linejoin="round" d="M4 21h16"/></svg>
+          </div>
+          <h2>Answer review</h2>
+          <p>Completed tests show correct and incorrect answers so students know exactly what to revisit.</p>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 19V5m0 14h16M8 16v-5m4 5V8m4 8v-8"/></svg>
+          </div>
+          <h2>Progress dashboard</h2>
+          <p>The student homepage shows real submitted scores, averages, improvement, and leaderboard rank.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="login-band">
+      <div class="login-inner">
+        <div>
+          <h2>Ready to continue?</h2>
+          <p>Students can sign in with instructor-provided credentials. Admins can manage students, publish tests, and review class performance.</p>
+        </div>
+        <div class="login-actions">
+          <a class="btn btn-primary" href="student-login.html">Student login</a>
+          <a class="btn btn-secondary" href="admin-login.html">Admin login</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <span>SAT Prep Platform</span>
+      <div class="footer-links">
+        <a href="student-login.html">Student login</a>
+        <a href="admin-login.html">Admin login</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
