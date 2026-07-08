@@ -9,7 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/admin-tests.css">
 </head>
-<body>
+<body data-auth-role="admin">
   <aside class="sidebar">
     <div class="brand">SAT Prep <small>Admin panel</small></div>
     <div class="nav-label">Main</div>
@@ -44,6 +44,10 @@
       </div>
     </section>
   </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="js/shared.js"></script>
+  <script src="js/auth-guard.js"></script>
   <script src="js/admin-tests.js"></script>
 </body>
 </html>

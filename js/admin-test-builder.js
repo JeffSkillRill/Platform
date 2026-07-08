@@ -33,45 +33,55 @@
       ];
     }
 
-    // ---- Load saved draft ----
-    function loadDraft() {
-      const saved = localStorage.getItem('sat_draft_test');
+    const params = new URLSearchParams(window.location.search);
+    let context = null;
+    let editingTestId = params.get('id');
+    let originalStatus = 'draft';
+
+    // ---- Load saved draft or existing DB test ----
+    async function loadDraft() {
+      if (editingTestId) {
+        const testRows = await window.satRest(`tests?id=eq.${encodeURIComponent(editingTestId)}&select=*`);
+        const test = testRows[0];
+        if (!test) throw new Error('Test not found.');
+        originalStatus = test.status || 'draft';
+        document.getElementById('testNameInput').value = test.name || '';
+
+        const questions = await window.satRest(`admin_questions?test_id=eq.${encodeURIComponent(editingTestId)}&select=*&order=module_key.asc,order_num.asc`);
+        moduleQuestions = { rw1:[], rw2:[], math1:[], math2:[] };
+        questions.forEach((question) => {
+          const key = question.module_key;
+          if (!moduleQuestions[key]) return;
+          moduleQuestions[key].push({
+            id: question.id,
+            module: key,
+            difficulty: question.difficulty || 'medium',
+            stem: question.stem || '',
+            image: question.image_url || null,
+            choices: window.parseJson(question.choices, ['', '', '', '']),
+            correct: question.correct,
+            topic: question.topic || null,
+            explanation: question.explanation || null,
+          });
+        });
+        return;
+      }
+
+      const saved = localStorage.getItem('sat_draft_test_new') || localStorage.getItem('sat_draft_test');
       if (saved) {
         const data = JSON.parse(saved);
         moduleQuestions = data.moduleQuestions || { rw1:[], rw2:[], math1:[], math2:[] };
         document.getElementById('testNameInput').value = data.name || '';
-        renderList();
-        updateEstimator();
       }
     }
-
-    // ============================================================
-    // PASTE YOUR SUPABASE CREDENTIALS HERE
-    // ============================================================
-   const SUPABASE_URL     = 'https://lsbpskmzffmaztczlokh.supabase.co';       // e.g. https://xyzxyz.supabase.co
-   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxzYnBza216ZmZtYXp0Y3psb2toIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI2OTc5NzMsImV4cCI6MjA5ODI3Mzk3M30.zRtly7a6XPKoU6BaZ2eftQxxOTFSUkw1wQ8A6-H1-tI'; // starts with eyJ...
-
-    const db = {
-      async insert(table, data) {
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
-          method: 'POST',
-          headers: {
-            'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-            'Content-Type': 'application/json', 'Prefer': 'return=representation'
-          },
-          body: JSON.stringify(data)
-        });
-        if (!res.ok) throw new Error(await res.text());
-        return res.json();
-      }
-    };
 
     // ---- Save draft ----
     function saveDraft() {
       const name = document.getElementById('testNameInput').value.trim();
       if (!name) { showToast('Please enter a test name first.'); return; }
       if (currentQIndex !== null) collectCurrentForm();
-      localStorage.setItem('sat_draft_test', JSON.stringify({ name, moduleQuestions }));
+      const key = editingTestId ? `sat_draft_test_${editingTestId}` : 'sat_draft_test_new';
+      localStorage.setItem(key, JSON.stringify({ name, moduleQuestions }));
       showToast('Draft saved locally ✓');
     }
 
@@ -79,9 +89,9 @@
     async function publishTest() {
       const name = document.getElementById('testNameInput').value.trim();
       if (!name) { showToast('Please enter a test name first.'); return; }
+      if (currentQIndex !== null) collectCurrentForm();
       const all = allQuestions();
       if (all.length === 0) { showToast('Add at least one question before publishing.'); return; }
-      if (currentQIndex !== null) collectCurrentForm();
 
       const incomplete = all.filter(q =>
         !q.stem.trim() || q.choices.some(c => !c.trim()) || q.correct === null
@@ -94,33 +104,72 @@
       btn.disabled = true; btn.textContent = 'Publishing…';
 
       try {
-        const [test] = await db.insert('tests', { name, status:'published' });
+        let testId = editingTestId;
+        if (testId) {
+          await window.satPatch(`tests?id=eq.${encodeURIComponent(testId)}`, {
+            name,
+            status: 'draft',
+            updated_at: new Date().toISOString(),
+          });
+          await window.satDelete(`questions?test_id=eq.${encodeURIComponent(testId)}`);
+        } else {
+          const [created] = await window.satInsert('tests', {
+            name,
+            status: 'draft',
+            created_by: context.profile.id,
+          });
+          testId = created.id;
+          editingTestId = testId;
+        }
 
-        // Insert questions with order_num tracking per module
+        const questionRows = [];
         let orderNum = 0;
-        for (const [modKey, qs] of Object.entries(moduleQuestions)) {
+        Object.entries(moduleQuestions).forEach(([modKey, qs]) => {
           const cfg = MODULE_CONFIG[modKey];
-          for (const q of qs) {
-            await db.insert('questions', {
-              test_id:    test.id,
+          qs.forEach((q) => {
+            questionRows.push({
+              test_id:    testId,
               section:    cfg.section,
-              module_key: modKey,           // rw1 / rw2 / math1 / math2
+              module_key: modKey,
               difficulty: q.difficulty,
               stem:       q.stem,
               image_url:  q.image || null,
               choices:    q.choices,
               correct:    q.correct,
-              order_num:  orderNum++
+              topic:      q.topic || null,
+              explanation:q.explanation || null,
+              order_num:  orderNum++,
             });
-          }
-        }
+          });
+        });
 
+        await window.satInsert('questions', questionRows);
+        const students = await window.satRest('profiles?role=eq.student&is_active=eq.true&select=id');
+        if (students.length) {
+          await window.satRest('test_assignments', {
+            method: 'POST',
+            headers: { Prefer: 'resolution=ignore-duplicates,return=minimal' },
+            body: students.map((student) => ({
+              test_id: testId,
+              student_id: student.id,
+              assigned_by: context.profile.id,
+            })),
+          });
+        }
+        await window.satPatch(`tests?id=eq.${encodeURIComponent(testId)}`, {
+          name,
+          status: 'published',
+          updated_at: new Date().toISOString(),
+        });
+
+        localStorage.removeItem(`sat_draft_test_${testId}`);
+        localStorage.removeItem('sat_draft_test_new');
         localStorage.removeItem('sat_draft_test');
         showToast(`"${name}" published — ${all.length} questions saved ✓`);
-        setTimeout(() => { window.location.href = 'admin-dashboard.html'; }, 1800);
+        setTimeout(() => { window.location.href = 'admin-tests.html'; }, 1800);
 
       } catch(err) {
-        showToast('Failed to publish. Check your Supabase credentials.');
+        showToast(`Failed to publish. Test stayed as ${editingTestId ? 'draft' : originalStatus}.`);
         console.error(err);
         btn.disabled = false; btn.textContent = 'Publish test';
       }
@@ -258,7 +307,7 @@
     }
 
     function escHtml(str) {
-      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      return window.escapeHtml(str);
     }
 
     function setCorrect(idx) {
@@ -391,8 +440,8 @@
         return `
           <div class="q-chip ${isActive?'active':''}" onclick="selectQuestion(${i})" data-qid="${q.id}">
             <div class="q-num">${i+1}</div>
-            <div class="q-chip-text">${preview}</div>
-            <span class="q-diff ${q.difficulty}">${q.difficulty[0].toUpperCase()}</span>
+            <div class="q-chip-text">${window.escapeHtml(preview)}</div>
+            <span class="q-diff ${window.escapeHtml(q.difficulty)}">${window.escapeHtml(q.difficulty[0].toUpperCase())}</span>
             <button class="q-delete" onclick="event.stopPropagation();deleteQuestion(${i})" title="Delete">
               <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
@@ -439,19 +488,31 @@
     }
 
     // ---- Image upload ----
-    function handleImageUpload(event) {
+    async function handleImageUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
       if (file.size > 5*1024*1024) { showToast('Image must be under 5MB.'); return; }
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const base64 = e.target.result;
-        if (currentQIndex !== null) moduleQuestions[activeTab][currentQIndex].image = base64;
-        document.getElementById('previewImg').src       = base64;
+      if (!file.type.startsWith('image/')) { showToast('Please choose an image file.'); return; }
+
+      try {
+        const client = window.satGetClient();
+        const ext = file.name.split('.').pop() || 'png';
+        const path = `${editingTestId || 'draft'}/${Date.now()}-${Math.random().toString(16).slice(2)}.${ext}`;
+        const { error } = await client.storage
+          .from('question-images')
+          .upload(path, file, { contentType: file.type, upsert: false });
+        if (error) throw error;
+
+        const { data } = client.storage.from('question-images').getPublicUrl(path);
+        const publicUrl = data.publicUrl;
+        if (currentQIndex !== null) moduleQuestions[activeTab][currentQIndex].image = publicUrl;
+        document.getElementById('previewImg').src = publicUrl;
         document.getElementById('imgPreview').style.display = 'block';
         document.getElementById('uploadZone').style.display = 'none';
-      };
-      reader.readAsDataURL(file);
+      } catch (err) {
+        console.error(err);
+        showToast('Image upload failed. Check the question-images storage bucket.');
+      }
     }
 
     function removeImage() {
@@ -470,6 +531,18 @@
     }
 
     // ---- Init ----
-    loadDraft();
-    switchTab('rw1');
-    updateEstimator();
+    async function init() {
+      context = await window.SAT_AUTH_READY;
+      if (!context) return;
+      try {
+        await loadDraft();
+      } catch (err) {
+        console.error(err);
+        showToast('Could not load this test.');
+      }
+      switchTab('rw1');
+      renderList();
+      updateEstimator();
+    }
+
+    init();

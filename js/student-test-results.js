@@ -1,181 +1,160 @@
-    const LETTERS = ['A','B','C','D'];
-    const SUPABASE_URL     = 'https://lsbpskmzffmaztczlokh.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxzYnBza216ZmZtYXp0Y3psb2toIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI2OTc5NzMsImV4cCI6MjA5ODI3Mzk3M30.zRtly7a6XPKoU6BaZ2eftQxxOTFSUkw1wQ8A6-H1-tI';
-    const db = {
-      async getWhere(table, col, op, val, extra='') {
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${col}=${op}.${encodeURIComponent(val)}${extra}&select=*`, {
-          headers:{ 'apikey':SUPABASE_ANON_KEY,'Authorization':`Bearer ${SUPABASE_ANON_KEY}` }
-        });
-        if (!res.ok) throw new Error(await res.text());
-        return res.json();
-      }
-    };
+(function () {
+  const LETTERS = window.SAT_LETTERS || ['A', 'B', 'C', 'D'];
+  let reviewRows = [];
+  let attempt = null;
+  let test = null;
+  let activeFilter = 'all';
 
-    let allQuestions = [];
-    let answers      = {};
-    let activeFilter = 'all';
+  function getAttemptId() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('attemptId') || window.parseJson(localStorage.getItem('sat_last_result'), {}).attemptId;
+  }
 
-    // Load result from localStorage
-    const result = JSON.parse(localStorage.getItem('sat_last_result') || '{}');
-    if (!result.questions) {
-      document.querySelector('.content').innerHTML =
-        '<div style="text-align:center;padding:4rem;color:var(--text-faint);">No results found. Please take a test first.</div>';
-    } else {
-      allQuestions = result.questions;
-      answers      = result.answers || {};
-      init();
+  function getStatus(row) {
+    if (row.chosen === null || row.chosen === undefined) return 'skipped';
+    return row.is_correct ? 'correct' : 'wrong';
+  }
+
+  function setFilter(filter, button) {
+    activeFilter = filter;
+    document.querySelectorAll('.filter-btn').forEach((item) => item.classList.remove('active'));
+    if (button) button.classList.add('active');
+    renderList();
+  }
+
+  function renderSummary() {
+    const correct = reviewRows.filter((row) => row.is_correct).length;
+    const skipped = reviewRows.filter((row) => row.chosen === null || row.chosen === undefined).length;
+    const wrong = Math.max(0, reviewRows.length - correct - skipped);
+    const title = test?.name || 'Test Results';
+
+    window.satSetText('topbarName', title);
+    window.satSetText('summaryTitle', title);
+    window.satSetText(
+      'summarySub',
+      `${reviewRows.length} questions · Completed ${window.formatDate(attempt?.submitted_at)}`
+    );
+
+    document.getElementById('timeBadge').innerHTML = `
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" d="M12 6v6l4 2"/></svg>
+      Time: ${window.escapeHtml(window.formatTime(attempt?.time_taken || 0))}`;
+
+    document.getElementById('summaryStats').innerHTML = `
+      <div class="sum-stat"><div class="sum-stat-val correct">${correct}</div><div class="sum-stat-lbl">Correct</div></div>
+      <div class="sum-stat"><div class="sum-stat-val wrong">${wrong}</div><div class="sum-stat-lbl">Wrong</div></div>
+      <div class="sum-stat"><div class="sum-stat-val skipped">${skipped}</div><div class="sum-stat-lbl">Skipped</div></div>
+      <div class="sum-stat"><div class="sum-stat-val" style="color:#fff;">${window.escapeHtml(attempt?.total_score || '—')}</div><div class="sum-stat-lbl">Score</div></div>`;
+  }
+
+  function renderList() {
+    const list = document.getElementById('questionList');
+    const filtered = reviewRows.filter((row) => activeFilter === 'all' || getStatus(row) === activeFilter);
+    if (!filtered.length) {
+      list.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--text-faint);">No questions in this category.</div>';
+      return;
     }
 
-    async function init() {
-      await hydrateCorrectAnswers();
-      const canReview = allQuestions.every(q => q.correct !== undefined && q.correct !== null);
-      if (!canReview) {
-        document.querySelector('.content').innerHTML =
-          '<div style="text-align:center;padding:4rem;color:var(--text-faint);">Review is unavailable for this session. Please open the saved result after the secure review API is enabled.</div>';
-        return;
-      }
+    const groups = [
+      ['rw', 'Reading & Writing'],
+      ['math', 'Math'],
+    ];
+    let html = '';
+    groups.forEach(([section, label]) => {
+      const rows = filtered.filter((row) => row.section === section);
+      if (!rows.length) return;
+      html += `<div class="section-divider"><div class="section-divider-line"></div><div class="section-divider-label">${label}</div><div class="section-divider-line"></div></div>`;
+      html += rows.map((row) => buildCard(row, reviewRows.indexOf(row) + 1)).join('');
+    });
+    list.innerHTML = html;
+  }
 
-      document.getElementById('topbarName').textContent   = result.testName || 'Test Results';
-      document.getElementById('summaryTitle').textContent = result.testName || 'Test Results';
+  function buildCard(row, globalNum) {
+    const status = getStatus(row);
+    const chosen = row.chosen;
+    const choices = window.parseJson(row.choices, []);
+    const imageUrl = window.safeImageUrl(row.image_url);
+    const imgHtml = imageUrl ? `<img class="q-image" src="${window.escapeHtml(imageUrl)}" alt="Question image"/>` : '';
+    const labelMap = { correct: 'Correct', wrong: 'Wrong', skipped: 'Skipped' };
 
-      // Time taken
-      const t   = result.timeTaken || 0;
-      const hh  = Math.floor(t / 3600);
-      const mm  = Math.floor((t % 3600) / 60);
-      const ss  = t % 60;
-      const timeStr = hh > 0
-        ? `${hh}h ${mm}m ${ss}s`
-        : `${mm}m ${ss}s`;
+    const choicesHtml = choices.map((choice, index) => {
+      const isCorrect = index === row.correct;
+      const isChosen = index === chosen;
+      let rowClass = 'neutral';
+      if (isCorrect) rowClass = 'was-correct';
+      else if (isChosen && !isCorrect) rowClass = 'was-wrong';
 
-      document.getElementById('timeBadge').innerHTML = `
-        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" d="M12 6v6l4 2"/></svg>
-        Time: ${timeStr}`;
-
-      document.getElementById('summarySub').textContent =
-        `${allQuestions.length} questions · Completed ${new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}`;
-
-      // Count correct / wrong / skipped
-      let correct = 0, wrong = 0, skipped = 0;
-      allQuestions.forEach(q => {
-        const chosen = answers[q.id];
-        if (chosen === null || chosen === undefined) skipped++;
-        else if (chosen === q.correct) correct++;
-        else wrong++;
-      });
-
-      document.getElementById('summaryStats').innerHTML = `
-        <div class="sum-stat"><div class="sum-stat-val correct">${correct}</div><div class="sum-stat-lbl">Correct</div></div>
-        <div class="sum-stat"><div class="sum-stat-val wrong">${wrong}</div><div class="sum-stat-lbl">Wrong</div></div>
-        <div class="sum-stat"><div class="sum-stat-val skipped">${skipped}</div><div class="sum-stat-lbl">Skipped</div></div>
-        <div class="sum-stat"><div class="sum-stat-val" style="color:#fff;">${allQuestions.length}</div><div class="sum-stat-lbl">Total</div></div>`;
-
-      renderList();
-    }
-
-    async function hydrateCorrectAnswers() {
-      const hasCorrectAnswers = allQuestions.every(q => q.correct !== undefined && q.correct !== null);
-      if (hasCorrectAnswers || !result.testId) return;
-
-      try {
-        const fullQuestions = await db.getWhere('questions','test_id','eq',result.testId,'&order=order_num.asc');
-        if (fullQuestions.length) {
-          allQuestions = fullQuestions.map(q => ({
-            ...q,
-            choices: typeof q.choices === 'string' ? JSON.parse(q.choices) : q.choices
-          }));
-        }
-      } catch (err) {
-        document.getElementById('summarySub').textContent =
-          'Review unavailable because correct answers are protected for this session.';
-      }
-    }
-
-    function getStatus(q) {
-      const chosen = answers[q.id];
-      if (chosen === null || chosen === undefined) return 'skipped';
-      return chosen === q.correct ? 'correct' : 'wrong';
-    }
-
-    function setFilter(f, btn) {
-      activeFilter = f;
-      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      renderList();
-    }
-
-    function renderList() {
-      const list   = document.getElementById('questionList');
-      let filtered = allQuestions.filter(q => activeFilter === 'all' || getStatus(q) === activeFilter);
-
-      if (filtered.length === 0) {
-        list.innerHTML = `<div style="text-align:center;padding:3rem;color:var(--text-faint);">No questions in this category.</div>`;
-        return;
-      }
-
-      // Group by section
-      const rw   = filtered.filter(q => q.section === 'rw');
-      const math = filtered.filter(q => q.section === 'math');
-
-      let html = '';
-
-      if (rw.length > 0) {
-        html += `<div class="section-divider"><div class="section-divider-line"></div><div class="section-divider-label">Reading & Writing</div><div class="section-divider-line"></div></div>`;
-        html += rw.map((q,i) => buildCard(q, allQuestions.indexOf(q)+1)).join('');
-      }
-      if (math.length > 0) {
-        html += `<div class="section-divider"><div class="section-divider-line"></div><div class="section-divider-label">Math</div><div class="section-divider-line"></div></div>`;
-        html += math.map((q,i) => buildCard(q, allQuestions.indexOf(q)+1)).join('');
-      }
-
-      list.innerHTML = html;
-    }
-
-    function buildCard(q, globalNum) {
-      const status  = getStatus(q);
-      const chosen  = answers[q.id];
-
-      const imgHtml = q.image_url
-        ? `<img class="q-image" src="${q.image_url}" alt="Question image"/>`
-        : '';
-
-      const choicesHtml = q.choices.map((c, i) => {
-        const isCorrect = i === q.correct;
-        const isChosen  = i === chosen;
-        let rowClass = 'neutral';
-        if (isCorrect) rowClass = 'was-correct';
-        else if (isChosen && !isCorrect) rowClass = 'was-wrong';
-
-        let tags = '';
-        if (isCorrect) tags += `<span class="tag correct-tag">Correct answer</span>`;
-        if (isChosen && !isCorrect) tags += `<span class="tag wrong-tag">Your answer</span>`;
-        if (isChosen && isCorrect)  tags += `<span class="tag correct-tag">Your answer ✓</span>`;
-
-        return `
-          <div class="answer-row ${rowClass}">
-            <div class="ans-letter">${LETTERS[i]}</div>
-            <div class="ans-text">${c}${tags}</div>
-          </div>`;
-      }).join('');
-
-      const labelMap = { correct:'Correct', wrong:'Wrong', skipped:'Skipped' };
+      let tags = '';
+      if (isCorrect) tags += '<span class="tag correct-tag">Correct answer</span>';
+      if (isChosen && !isCorrect) tags += '<span class="tag wrong-tag">Your answer</span>';
+      if (isChosen && isCorrect) tags += '<span class="tag correct-tag">Your answer</span>';
 
       return `
-        <div class="q-review ${status}" id="card-${q.id}">
-          <div class="q-review-head" onclick="toggleCard('${q.id}')">
-            <div class="q-num-badge ${status}">${globalNum}</div>
-            <div class="q-stem-preview">${q.stem}</div>
-            <div class="result-tag ${status}">${labelMap[status]}</div>
-            <svg class="expand-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
-          </div>
-          <div class="q-review-body">
-            ${imgHtml}
-            <div class="q-full-stem">${q.stem}</div>
-            ${choicesHtml}
-          </div>
+        <div class="answer-row ${rowClass}">
+          <div class="ans-letter">${LETTERS[index]}</div>
+          <div class="ans-text">${window.escapeHtml(choice)}${tags}</div>
         </div>`;
+    }).join('');
+
+    return `
+      <div class="q-review ${status}" id="card-${window.escapeHtml(row.question_id)}">
+        <div class="q-review-head" onclick="toggleCard('${window.escapeHtml(row.question_id)}')">
+          <div class="q-num-badge ${status}">${globalNum}</div>
+          <div class="q-stem-preview">${window.escapeHtml(row.stem)}</div>
+          <div class="result-tag ${status}">${labelMap[status]}</div>
+          <svg class="expand-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+        </div>
+        <div class="q-review-body">
+          ${imgHtml}
+          <div class="q-full-stem">${window.escapeHtml(row.stem)}</div>
+          ${choicesHtml}
+          ${row.explanation ? `<div class="explanation">${window.escapeHtml(row.explanation)}</div>` : ''}
+        </div>
+      </div>`;
+  }
+
+  function toggleCard(questionId) {
+    const card = document.getElementById(`card-${questionId}`);
+    if (card) card.classList.toggle('open');
+  }
+
+  async function load() {
+    const attemptId = getAttemptId();
+    if (!attemptId) {
+      document.querySelector('.content').innerHTML =
+        '<div style="text-align:center;padding:4rem;color:var(--text-faint);">No results found. Please open a submitted test first.</div>';
+      return;
     }
 
-    function toggleCard(qId) {
-      const card = document.getElementById('card-' + qId);
-      card.classList.toggle('open');
+    const attemptRows = await window.satRest(`test_attempts?id=eq.${encodeURIComponent(attemptId)}&status=eq.submitted&select=id,test_id,time_taken,total_score,submitted_at`);
+    attempt = attemptRows[0];
+    if (!attempt) throw new Error('Submitted attempt not found.');
+
+    const [testRows, review] = await Promise.all([
+      window.satRest(`tests?id=eq.${encodeURIComponent(attempt.test_id)}&select=id,name`),
+      window.satRpc('get_attempt_review', { p_attempt_id: attemptId }),
+    ]);
+    test = testRows[0] || {};
+    reviewRows = (review || []).map((row) => ({
+      ...row,
+      choices: window.parseJson(row.choices, []),
+    }));
+    renderSummary();
+    renderList();
+  }
+
+  async function init() {
+    const context = await window.SAT_AUTH_READY;
+    if (!context) return;
+    try {
+      await load();
+    } catch (err) {
+      console.error(err);
+      document.querySelector('.content').innerHTML =
+        '<div style="text-align:center;padding:4rem;color:var(--text-faint);">Review is unavailable for this submitted attempt.</div>';
     }
+  }
+
+  window.setFilter = setFilter;
+  window.toggleCard = toggleCard;
+  init();
+}());

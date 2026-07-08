@@ -1,76 +1,145 @@
-    const SUPABASE_URL     = 'https://lsbpskmzffmaztczlokh.supabase.co';       // e.g. https://xyzxyz.supabase.co
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxzYnBza216ZmZtYXp0Y3psb2toIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI2OTc5NzMsImV4cCI6MjA5ODI3Mzk3M30.zRtly7a6XPKoU6BaZ2eftQxxOTFSUkw1wQ8A6-H1-tI'; // starts with eyJ...
-    const session = JSON.parse(localStorage.getItem('sat_user') || '{}');
-    if (!session.id) window.location.href = 'student-login.html';
+(function () {
+  let context = null;
+  let tests = [];
+  let questions = [];
+  let attempts = [];
 
-    // Set name
-    const initials = session.name ? session.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase() : 'ST';
-    document.getElementById('sAvatar').textContent = initials;
-    document.getElementById('sName').textContent   = session.name || 'Student';
+  function questionStats(testId) {
+    const qs = questions.filter((q) => q.test_id === testId);
+    return {
+      total: qs.length,
+      rw: qs.filter((q) => q.section === 'rw').length,
+      math: qs.filter((q) => q.section === 'math').length,
+    };
+  }
 
-    async function loadTests() {
-      try {
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/tests?status=eq.published&select=*&order=created_at.desc`, {
-          headers:{ 'apikey':SUPABASE_ANON_KEY,'Authorization':`Bearer ${SUPABASE_ANON_KEY}` }
-        });
-        const tests = await res.json();
-        const list  = document.getElementById('testList');
+  function latestAttempt(testId, status) {
+    return attempts
+      .filter((attempt) => attempt.test_id === testId && (!status || attempt.status === status))
+      .sort((a, b) => new Date(b.submitted_at || b.started_at) - new Date(a.submitted_at || a.started_at))[0];
+  }
 
-        if (!tests.length) {
-          list.innerHTML = `
-            <div class="empty-state">
-              <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-              <p>No tests available yet.<br>Your instructor hasn't published any tests.</p>
-            </div>`;
-          return;
+  function estimatedMinutes(test, stats) {
+    return (stats.rw ? Number(test.rw_minutes || 64) : 0) +
+      (stats.math ? Number(test.math_minutes || 70) : 0) +
+      (stats.rw && stats.math ? Number(test.break_minutes || 10) : 0);
+  }
+
+  async function startTest(testId) {
+    const test = tests.find((item) => item.id === testId);
+    const submitted = latestAttempt(testId, 'submitted');
+    if (submitted) {
+      window.location.href = `student-test-results.html?attemptId=${encodeURIComponent(submitted.id)}`;
+      return;
+    }
+
+    const inProgress = latestAttempt(testId, 'in_progress');
+    let attempt = inProgress;
+    if (!attempt) {
+      const inserted = await window.satInsert('test_attempts', {
+        student_id: context.profile.id,
+        test_id: testId,
+        status: 'in_progress',
+      });
+      attempt = inserted[0];
+      attempts.unshift(attempt);
+    }
+
+    window.location.href = `student-test-solve.html?testId=${encodeURIComponent(testId)}&attemptId=${encodeURIComponent(attempt.id)}&testName=${encodeURIComponent(test?.name || 'SAT Practice Test')}`;
+  }
+
+  function openResult(testId) {
+    const submitted = latestAttempt(testId, 'submitted');
+    if (!submitted) return;
+    window.location.href = `student-test-results.html?attemptId=${encodeURIComponent(submitted.id)}`;
+  }
+
+  function render() {
+    const list = document.getElementById('testList');
+    if (!tests.length) {
+      list.innerHTML = `
+        <div class="empty-state">
+          <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          <p>No tests available yet.<br>Your instructor has not assigned any published tests.</p>
+        </div>`;
+      return;
+    }
+
+    list.innerHTML = tests.map((test) => {
+      const stats = questionStats(test.id);
+      const submitted = latestAttempt(test.id, 'submitted');
+      const inProgress = latestAttempt(test.id, 'in_progress');
+      const date = window.formatDate(test.created_at);
+      const minutes = estimatedMinutes(test, stats);
+      const mainLabel = submitted ? 'Review' : inProgress ? 'Resume' : 'Start';
+
+      return `
+        <div class="test-card">
+          <div class="test-icon">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          </div>
+          <div class="test-info">
+            <div class="test-name">${window.escapeHtml(test.name)}</div>
+            <div class="test-meta">
+              <span>${stats.total} questions</span>
+              ${stats.rw ? `<span>R&amp;W: ${stats.rw}</span>` : ''}
+              ${stats.math ? `<span>Math: ${stats.math}</span>` : ''}
+              <span>~${minutes} min</span>
+              <span>${window.escapeHtml(date)}</span>
+            </div>
+          </div>
+          <div class="test-actions">
+            <button class="btn-start" data-start-id="${window.escapeHtml(test.id)}">${mainLabel}</button>
+            ${submitted ? `<button class="btn-secondary" data-result-id="${window.escapeHtml(test.id)}">Results</button>` : ''}
+            <a class="btn-secondary" href="student-leaderboard.html?testId=${encodeURIComponent(test.id)}">Leaderboard</a>
+          </div>
+        </div>`;
+    }).join('');
+
+    list.querySelectorAll('[data-start-id]').forEach((button) => {
+      button.addEventListener('click', async () => {
+        button.disabled = true;
+        button.textContent = 'Opening...';
+        try {
+          await startTest(button.dataset.startId);
+        } catch (err) {
+          console.error(err);
+          button.disabled = false;
+          button.textContent = 'Start';
+          alert('Could not start this test. Please try again.');
         }
+      });
+    });
 
-        // Load question counts per test
-        const qRes = await fetch(`${SUPABASE_URL}/rest/v1/questions?select=test_id,section`, {
-          headers:{ 'apikey':SUPABASE_ANON_KEY,'Authorization':`Bearer ${SUPABASE_ANON_KEY}` }
-        });
-        const allQs = await qRes.json();
+    list.querySelectorAll('[data-result-id]').forEach((button) => {
+      button.addEventListener('click', () => openResult(button.dataset.resultId));
+    });
+  }
 
-        list.innerHTML = tests.map(t => {
-          const qs    = allQs.filter(q => q.test_id === t.id);
-          const math  = qs.filter(q => q.section === 'math').length;
-          const rw    = qs.filter(q => q.section === 'rw').length;
-          const total = qs.length;
-          const date  = new Date(t.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-
-          // Estimate time: rw=64min, math=70min
-          const mins = (rw > 0 ? 64 : 0) + (math > 0 ? 70 : 0);
-
-          return `
-            <div class="test-card">
-              <div class="test-icon">
-                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-              </div>
-              <div class="test-info">
-                <div class="test-name">${t.name}</div>
-                <div class="test-meta">
-                  <span>📝 ${total} questions</span>
-                  ${rw   ? `<span>📖 R&amp;W: ${rw}</span>`  : ''}
-                  ${math ? `<span>🔢 Math: ${math}</span>` : ''}
-                  <span>⏱ ~${mins} min</span>
-                  <span>📅 ${date}</span>
-                </div>
-              </div>
-              <button class="btn-start" onclick="startTest('${t.id}','${t.name.replace(/'/g,"\\'")}')">
-                Start →
-              </button>
-            </div>`;
-        }).join('');
-
-      } catch(err) {
-        document.getElementById('testList').innerHTML =
-          `<div class="empty-state"><p>Failed to load tests. Check Supabase credentials.</p></div>`;
-      }
+  async function loadTests() {
+    try {
+      [tests, questions, attempts] = await Promise.all([
+        window.satRest('tests?status=eq.published&select=id,name,status,created_at,rw_minutes,math_minutes,break_minutes&order=created_at.desc'),
+        window.satRest('student_questions?select=test_id,section,module_key'),
+        window.satRest(`test_attempts?student_id=eq.${encodeURIComponent(context.profile.id)}&select=id,test_id,status,started_at,submitted_at,total_score&order=started_at.desc`),
+      ]);
+      render();
+    } catch (err) {
+      console.error(err);
+      document.getElementById('testList').innerHTML =
+        '<div class="empty-state"><p>Failed to load tests. Check Supabase policies and assignments.</p></div>';
     }
+  }
 
-    function startTest(testId, testName) {
-      if (!confirm(`Start "${testName}"?\n\nThe timer will begin immediately. Make sure you have enough time.`)) return;
-      window.location.href = `student-test-solve.html?testId=${testId}&testName=${encodeURIComponent(testName)}`;
-    }
+  async function init() {
+    context = await window.SAT_AUTH_READY;
+    if (!context) return;
+    window.satSetSidebarUser(context.profile, {
+      name: ['sName'],
+      avatar: ['sAvatar'],
+    });
+    await loadTests();
+  }
 
-    loadTests();
+  init();
+}());

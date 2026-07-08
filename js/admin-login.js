@@ -1,84 +1,90 @@
-    // ============================================================
-    // PASTE YOUR SUPABASE CREDENTIALS HERE
-    // Go to: supabase.com → your project → Settings → API
-    // ============================================================
-    const SUPABASE_URL      = 'https://lsbpskmzffmaztczlokh.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxzYnBza216ZmZtYXp0Y3psb2toIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI2OTc5NzMsImV4cCI6MjA5ODI3Mzk3M30.zRtly7a6XPKoU6BaZ2eftQxxOTFSUkw1wQ8A6-H1-tI';
+(function () {
+  const pwInput = document.getElementById('password');
+  const toggleBtn = document.getElementById('togglePw');
+  const form = document.getElementById('adminLoginForm');
+  const submitBtn = document.getElementById('submitBtn');
+  const globalError = document.getElementById('globalError');
+  const usernameInput = document.getElementById('username');
+  const passwordInput = document.getElementById('password');
 
-    const db = {
-      async getWhere(table, column, operator, value) {
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${column}=${operator}.${encodeURIComponent(value)}&select=*`, {
-          headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
-        });
-        if (!res.ok) throw new Error(await res.text());
-        return res.json();
-      }
-    };
-    const pwInput = document.getElementById('password');
-    const toggleBtn = document.getElementById('togglePw');
-    toggleBtn.addEventListener('click', () => {
-      const isHidden = pwInput.type === 'password';
-      pwInput.type = isHidden ? 'text' : 'password';
-      toggleBtn.textContent = isHidden ? 'Hide' : 'Show';
-    });
+  toggleBtn.addEventListener('click', () => {
+    const isHidden = pwInput.type === 'password';
+    pwInput.type = isHidden ? 'text' : 'password';
+    toggleBtn.textContent = isHidden ? 'Hide' : 'Show';
+  });
 
-    const form = document.getElementById('adminLoginForm');
-    const submitBtn = document.getElementById('submitBtn');
-    const globalError = document.getElementById('globalError');
+  function setError(inputId, errorId, msg) {
+    document.getElementById(inputId).classList.add('error');
+    const error = document.getElementById(errorId);
+    error.textContent = msg;
+    error.classList.add('visible');
+  }
 
-    function setError(inputId, errorId, msg) {
-      document.getElementById(inputId).classList.add('error');
-      const e = document.getElementById(errorId);
-      e.textContent = msg; e.classList.add('visible');
+  function clearError(inputId, errorId) {
+    document.getElementById(inputId).classList.remove('error');
+    document.getElementById(errorId).classList.remove('visible');
+  }
+
+  usernameInput.addEventListener('input', () => {
+    clearError('username', 'usernameError');
+    globalError.classList.remove('visible');
+  });
+
+  passwordInput.addEventListener('input', () => {
+    clearError('password', 'passwordError');
+    globalError.classList.remove('visible');
+  });
+
+  async function requireAdminProfile(userId) {
+    const profile = await window.satGetProfile(userId);
+    if (!profile || profile.role !== 'admin' || profile.is_active === false) {
+      throw new Error('This login is not an active admin account.');
     }
-    function clearError(inputId, errorId) {
-      document.getElementById(inputId).classList.remove('error');
-      document.getElementById(errorId).classList.remove('visible');
+    return profile;
+  }
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const username = usernameInput.value.trim();
+    const password = passwordInput.value;
+    let valid = true;
+
+    if (!username) {
+      setError('username', 'usernameError', 'Username is required.');
+      valid = false;
     }
+    if (!password) {
+      setError('password', 'passwordError', 'Password is required.');
+      valid = false;
+    }
+    if (!valid) return;
 
-    document.getElementById('username').addEventListener('input', () => { clearError('username','usernameError'); globalError.classList.remove('visible'); });
-    document.getElementById('password').addEventListener('input', () => { clearError('password','passwordError'); globalError.classList.remove('visible'); });
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Signing in...';
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const username = document.getElementById('username').value.trim();
-      const password = document.getElementById('password').value;
-      let valid = true;
-      if (!username) { setError('username','usernameError','Username is required.'); valid = false; }
-      if (!password) { setError('password','passwordError','Password is required.'); valid = false; }
-      if (!valid) return;
+    try {
+      const client = window.satGetClient();
+      const { data, error } = await client.auth.signInWithPassword({
+        email: window.satAuthEmailFromUsername(username),
+        password,
+      });
+      if (error) throw error;
 
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Signing in...';
-
-      try {
-        // Look up user in Supabase by username
-        const results = await db.getWhere('users', 'username', 'eq', username);
-
-        // Check user exists, password matches, and role is admin
-        if (
-          results.length === 0 ||
-          results[0].password !== password ||
-          results[0].role !== 'admin'
-        ) {
-          throw new Error('Invalid credentials');
-        }
-
-        // Save session info to localStorage
-        const user = results[0];
-        localStorage.setItem('sat_user', JSON.stringify({
-          id:       user.id,
-          name:     user.full_name,
-          username: user.username,
-          role:     user.role,
-        }));
-
-        window.location.href = 'admin-dashboard.html';
-
-      } catch (err) {
-        globalError.classList.add('visible');
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Sign in';
-      }
-    });
+      const profile = await requireAdminProfile(data.user.id);
+      localStorage.setItem('sat_user', JSON.stringify({
+        id: profile.id,
+        name: profile.full_name,
+        username: profile.username,
+        role: profile.role,
+      }));
+      window.location.href = 'admin-dashboard.html';
+    } catch (err) {
+      console.error(err);
+      try { await window.satGetClient().auth.signOut(); } catch (signOutErr) { console.error(signOutErr); }
+      globalError.classList.add('visible');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Sign in';
+    }
+  });
+}());

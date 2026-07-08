@@ -66,6 +66,15 @@
       cursor:pointer; transition:background 0.12s; white-space:nowrap; flex-shrink:0;
     }
     .btn-start:hover { background:var(--teal-dark); }
+    .btn-start:disabled { opacity:0.6; cursor:wait; }
+    .test-actions { display:flex; align-items:center; gap:0.5rem; flex-shrink:0; flex-wrap:wrap; justify-content:flex-end; }
+    .btn-secondary {
+      background:#fff; color:var(--text); border:1.5px solid var(--border);
+      border-radius:9px; padding:0.52rem 0.8rem; text-decoration:none;
+      font-family:'Inter',sans-serif; font-size:0.82rem; font-weight:700;
+      cursor:pointer; transition:border-color 0.12s, color 0.12s; white-space:nowrap;
+    }
+    .btn-secondary:hover { border-color:var(--teal); color:var(--teal-darker); }
 
     .empty-state { text-align:center; padding:4rem 2rem; color:var(--text-faint); }
     .empty-state svg { width:48px; height:48px; margin-bottom:1rem; color:var(--teal-mid); }

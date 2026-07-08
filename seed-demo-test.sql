@@ -134,5 +134,12 @@ begin
     v_order := v_order + 1;
   end loop;
 
-  raise notice 'Created demo test % with id %', 'SAT Platform Demo Test - 98 Questions', v_test_id;
+  insert into public.test_assignments (test_id, student_id, assigned_by)
+  select v_test_id, id, null
+  from public.profiles
+  where role = 'student'
+    and is_active = true
+  on conflict (test_id, student_id) do nothing;
+
+  raise notice 'Created demo test % with id % and assigned it to active students', 'SAT Platform Demo Test - 98 Questions', v_test_id;
 end $$;

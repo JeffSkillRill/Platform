@@ -9,7 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/admin-test-builder.css">
 </head>
-<body>
+<body data-auth-role="admin">
 
   <!-- Nav sidebar -->
   <aside class="nav-sidebar">
@@ -277,6 +277,11 @@
     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
     <span id="toastMsg">Saved</span>
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="js/shared.js"></script>
+  <script src="js/auth-guard.js"></script>
+  <script src="js/sat-config.js"></script>
   <script src="js/admin-test-builder.js"></script>
 </body>
 </html>
