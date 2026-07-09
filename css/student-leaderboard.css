@@ -15,7 +15,13 @@
     .content{padding:1.75rem 2rem 3rem;max-width:900px}
     .head{display:flex;align-items:flex-end;justify-content:space-between;gap:1rem;margin-bottom:1.35rem}
     h1{font-family:"Space Grotesk",sans-serif;font-size:1.45rem;margin-bottom:.25rem}.head p{font-size:.88rem;color:var(--muted)}
+    .filters{display:flex;gap:.6rem;flex-wrap:wrap;justify-content:flex-end}
     select{background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:.55rem .8rem;font:600 .84rem Inter,sans-serif;color:var(--text)}
+    .podium{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.8rem;margin-bottom:1rem}
+    .podium-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1rem;text-align:center}
+    .podium-card:first-child{border-color:rgba(217,119,6,.35);background:#fffbeb}
+    .podium-rank{font-family:"Space Grotesk",sans-serif;font-size:1.2rem;font-weight:800;color:var(--muted)}
+    .podium-name{font-weight:800;margin-top:.25rem}.podium-score{font-family:"Space Grotesk",sans-serif;color:var(--green);font-weight:800;margin-top:.25rem}
     .panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
     table{width:100%;border-collapse:collapse}
     th{background:var(--teal-light);color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;text-align:left;padding:.75rem 1rem}

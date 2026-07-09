@@ -38,6 +38,19 @@
     let editingTestId = params.get('id');
     let originalStatus = 'draft';
 
+    function toDatetimeLocal(value) {
+      if (!value) return '';
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return '';
+      const shifted = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+      return shifted.toISOString().slice(0, 16);
+    }
+
+    function dueAtIso() {
+      const value = document.getElementById('dueDateInput')?.value;
+      return value ? new Date(value).toISOString() : null;
+    }
+
     // ---- Load saved draft or existing DB test ----
     async function loadDraft() {
       if (editingTestId) {
@@ -46,6 +59,8 @@
         if (!test) throw new Error('Test not found.');
         originalStatus = test.status || 'draft';
         document.getElementById('testNameInput').value = test.name || '';
+        const assignmentRows = await window.satRest(`test_assignments?test_id=eq.${encodeURIComponent(editingTestId)}&select=due_at&limit=1`);
+        document.getElementById('dueDateInput').value = toDatetimeLocal(assignmentRows[0]?.due_at);
 
         const questions = await window.satRest(`admin_questions?test_id=eq.${encodeURIComponent(editingTestId)}&select=*&order=module_key.asc,order_num.asc`);
         moduleQuestions = { rw1:[], rw2:[], math1:[], math2:[] };
@@ -60,6 +75,8 @@
             image: question.image_url || null,
             choices: window.parseJson(question.choices, ['', '', '', '']),
             correct: question.correct,
+            answerType: question.answer_type || 'mcq',
+            answerText: question.answer_text || '',
             topic: question.topic || null,
             explanation: question.explanation || null,
           });
@@ -72,6 +89,7 @@
         const data = JSON.parse(saved);
         moduleQuestions = data.moduleQuestions || { rw1:[], rw2:[], math1:[], math2:[] };
         document.getElementById('testNameInput').value = data.name || '';
+        document.getElementById('dueDateInput').value = data.dueAt ? toDatetimeLocal(data.dueAt) : '';
       }
     }
 
@@ -81,7 +99,7 @@
       if (!name) { showToast('Please enter a test name first.'); return; }
       if (currentQIndex !== null) collectCurrentForm();
       const key = editingTestId ? `sat_draft_test_${editingTestId}` : 'sat_draft_test_new';
-      localStorage.setItem(key, JSON.stringify({ name, moduleQuestions }));
+      localStorage.setItem(key, JSON.stringify({ name, moduleQuestions, dueAt: dueAtIso() }));
       showToast('Draft saved locally ✓');
     }
 
@@ -91,11 +109,15 @@
       if (!name) { showToast('Please enter a test name first.'); return; }
       if (currentQIndex !== null) collectCurrentForm();
       const all = allQuestions();
+      const dueAt = dueAtIso();
       if (all.length === 0) { showToast('Add at least one question before publishing.'); return; }
 
-      const incomplete = all.filter(q =>
-        !q.stem.trim() || q.choices.some(c => !c.trim()) || q.correct === null
-      );
+      const incomplete = all.filter((q) => {
+        const type = q.answerType || 'mcq';
+        if (!q.stem.trim()) return true;
+        if (type === 'spr') return !String(q.answerText || '').trim();
+        return !Array.isArray(q.choices) || q.choices.some((c) => !c.trim()) || q.correct === null;
+      });
       if (incomplete.length > 0) {
         showToast(`${incomplete.length} question(s) are incomplete.`); return;
       }
@@ -134,8 +156,10 @@
               difficulty: q.difficulty,
               stem:       q.stem,
               image_url:  q.image || null,
-              choices:    q.choices,
-              correct:    q.correct,
+              choices:    (q.answerType || 'mcq') === 'spr' ? [] : q.choices,
+              correct:    (q.answerType || 'mcq') === 'spr' ? null : q.correct,
+              answer_type:(q.answerType || 'mcq'),
+              answer_text:(q.answerType || 'mcq') === 'spr' ? String(q.answerText || '').trim() : null,
               topic:      q.topic || null,
               explanation:q.explanation || null,
               order_num:  orderNum++,
@@ -153,8 +177,12 @@
               test_id: testId,
               student_id: student.id,
               assigned_by: context.profile.id,
+              due_at: dueAt,
             })),
           });
+          await window.satPatch(`test_assignments?test_id=eq.${encodeURIComponent(testId)}`, {
+            due_at: dueAt,
+          }, 'return=minimal');
         }
         await window.satPatch(`tests?id=eq.${encodeURIComponent(testId)}`, {
           name,
@@ -241,6 +269,8 @@
         image:      null,
         choices:    ['','','',''],
         correct:    null,
+        answerType: 'mcq',
+        answerText: '',
       };
 
       moduleQuestions[activeTab].push(q);
@@ -266,7 +296,10 @@
       document.getElementById('formHeadSub').textContent   = `${cfg.label} — ${cfg.time}`;
       document.getElementById('qModuleDisplay').textContent = cfg.label;
       document.getElementById('qDifficulty').value          = q.difficulty;
+      document.getElementById('qAnswerType').value          = q.answerType || 'mcq';
+      document.getElementById('qAnswerText').value          = q.answerText || '';
       document.getElementById('qStem').value                = q.stem;
+      updateAnswerTypeUI(q.answerType || 'mcq');
 
       // Image
       const preview = document.getElementById('imgPreview');
@@ -278,7 +311,7 @@
         preview.style.display = 'none'; zone.style.display = 'block';
       }
 
-      renderChoices(q.choices, q.correct);
+      renderChoices(q.choices || ['', '', '', ''], q.correct);
 
       // Nav counters
       const modQs = moduleQuestions[activeTab];
@@ -291,6 +324,33 @@
       document.querySelectorAll('.q-chip').forEach(c => {
         if (c.dataset.qid === q.id) c.classList.add('active');
       });
+    }
+
+    // ---- Answer type UI ----
+    function updateAnswerTypeUI(type) {
+      const isSpr = type === 'spr';
+      const choicesCard = document.getElementById('choicesCard');
+      const sprCard = document.getElementById('sprAnswersCard');
+      if (choicesCard) choicesCard.style.display = isSpr ? 'none' : 'block';
+      if (sprCard) sprCard.style.display = isSpr ? 'block' : 'none';
+      if (isSpr) {
+        correctAnswer = null;
+      } else if (currentQIndex !== null) {
+        correctAnswer = moduleQuestions[activeTab][currentQIndex]?.correct ?? null;
+        updateCorrectHint(correctAnswer);
+      }
+    }
+
+    function setAnswerType(type) {
+      if (currentQIndex !== null) {
+        const q = moduleQuestions[activeTab][currentQIndex];
+        if (q) {
+          q.answerType = type === 'spr' ? 'spr' : 'mcq';
+          if (q.answerType === 'spr') q.correct = null;
+        }
+      }
+      updateAnswerTypeUI(type === 'spr' ? 'spr' : 'mcq');
+      renderList();
     }
 
     // ---- Render choice inputs ----
@@ -335,8 +395,10 @@
       const q = moduleQuestions[activeTab][currentQIndex];
       if (!q) return;
       q.difficulty = document.getElementById('qDifficulty').value;
+      q.answerType = document.getElementById('qAnswerType').value === 'spr' ? 'spr' : 'mcq';
       q.stem       = document.getElementById('qStem').value;
-      q.correct    = correctAnswer;
+      q.answerText = document.getElementById('qAnswerText').value || '';
+      q.correct    = q.answerType === 'spr' ? null : correctAnswer;
       q.choices    = LETTERS.map((_,i) => document.getElementById('choice'+i)?.value || '');
     }
 
@@ -441,6 +503,7 @@
           <div class="q-chip ${isActive?'active':''}" onclick="selectQuestion(${i})" data-qid="${q.id}">
             <div class="q-num">${i+1}</div>
             <div class="q-chip-text">${window.escapeHtml(preview)}</div>
+            <span class="q-type">${(q.answerType || 'mcq').toUpperCase()}</span>
             <span class="q-diff ${window.escapeHtml(q.difficulty)}">${window.escapeHtml(q.difficulty[0].toUpperCase())}</span>
             <button class="q-delete" onclick="event.stopPropagation();deleteQuestion(${i})" title="Delete">
               <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Practice — SAT Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/student-practice.css">
+  <link rel="stylesheet" href="css/theme.css">
+</head>
+<body data-auth-role="student">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="logo-mark">SAT <span>PREP</span></div></div>
+    <p class="nav-section-label">Menu</p>
+    <a class="nav-item" href="student-home.html">Home</a>
+    <a class="nav-item" href="student-tests.html">My tests</a>
+    <a class="nav-item active" href="student-practice.html">Practice</a>
+    <a class="nav-item" href="student-results.html">Results</a>
+    <a class="nav-item" href="student-leaderboard.html">Leaderboard</a>
+    <div class="sidebar-bottom">
+      <div class="student-chip">
+        <div class="avatar" id="practiceAvatar">ST</div>
+        <div>
+          <div class="student-name" id="practiceName">Student</div>
+          <div class="student-role">Student</div>
+        </div>
+        <button class="logout-btn" onclick="handleLogout()" title="Sign out">Sign out</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <span class="topbar-title">My mistakes</span>
+      <span class="progress-line" id="progressLine">Loading mistakes...</span>
+    </div>
+
+    <div class="content">
+      <section class="practice-shell">
+        <div class="practice-head">
+          <div>
+            <h1>Wrong-answer practice</h1>
+            <p>Review missed questions one at a time. Answers appear only after you check.</p>
+          </div>
+          <div class="filters">
+            <select id="sectionFilter"><option value="all">All sections</option></select>
+            <select id="topicFilter"><option value="all">All topics</option></select>
+          </div>
+        </div>
+
+        <div class="practice-card" id="practiceCard">
+          <div class="empty-state">Loading your missed questions...</div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="js/shared.js"></script>
+  <script src="js/theme.js"></script>
+  <script src="js/auth-guard.js"></script>
+  <script src="js/student-practice.js"></script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+:root[data-theme="dark"] {
+  --bg:#0f172a;
+  --surface:#152033;
+  --navy:#07111f;
+  --navy-mid:#101b2e;
+  --text:#e5eefc;
+  --text-muted:#a7b7cc;
+  --text-faint:#71839d;
+  --muted:#a7b7cc;
+  --faint:#71839d;
+  --border:#26364d;
+  --teal-light:rgba(58,219,186,0.12);
+  --teal-mid:rgba(58,219,186,0.28);
+  --accent-light:rgba(58,219,186,0.12);
+  --green-light:rgba(16,185,129,0.14);
+  --amber-light:rgba(245,158,11,0.14);
+  --red-light:rgba(239,68,68,0.14);
+}
+
+:root[data-theme="dark"] body {
+  background:var(--bg);
+  color:var(--text);
+}
+
+:root[data-theme="dark"] input,
+:root[data-theme="dark"] select,
+:root[data-theme="dark"] textarea {
+  background:#101b2e;
+  color:var(--text);
+  border-color:var(--border);
+}
+
+:root[data-theme="dark"] .test-bar .timer-num,
+:root[data-theme="dark"] .test-bar .bar-test-name {
+  color:#fff;
+}
+
+.theme-toggle {
+  margin:0.55rem 1.25rem;
+  border:1px solid rgba(255,255,255,0.12);
+  background:rgba(255,255,255,0.06);
+  color:rgba(255,255,255,0.82);
+  border-radius:9px;
+  padding:0.55rem 0.75rem;
+  cursor:pointer;
+  font:700 0.78rem Inter, sans-serif;
+  text-align:left;
+}
+
+.theme-toggle:hover {
+  background:rgba(255,255,255,0.1);
+  color:#fff;
+}

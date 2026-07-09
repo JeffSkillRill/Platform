@@ -3,6 +3,7 @@
   let tests = [];
   let questions = [];
   let attempts = [];
+  let assignments = [];
 
   function questionStats(testId) {
     const qs = questions.filter((q) => q.test_id === testId);
@@ -23,6 +24,19 @@
     return (stats.rw ? Number(test.rw_minutes || 64) : 0) +
       (stats.math ? Number(test.math_minutes || 70) : 0) +
       (stats.rw && stats.math ? Number(test.break_minutes || 10) : 0);
+  }
+
+  function dueInfo(testId) {
+    const assignment = assignments.find((item) => item.test_id === testId && item.due_at);
+    if (!assignment) return { html: '', sort: Number.MAX_SAFE_INTEGER };
+    const due = new Date(assignment.due_at);
+    const hours = (due - new Date()) / 36e5;
+    const cls = hours < 0 ? 'overdue' : hours < 48 ? 'soon' : '';
+    const text = hours < 0 ? 'Overdue' : `Due ${window.formatShortDate(assignment.due_at)}`;
+    return {
+      sort: due.getTime(),
+      html: `<span class="due-badge ${cls}">${window.escapeHtml(text)}</span>`,
+    };
   }
 
   async function startTest(testId) {
@@ -65,13 +79,15 @@
       return;
     }
 
-    list.innerHTML = tests.map((test) => {
+    const orderedTests = [...tests].sort((a, b) => dueInfo(a.id).sort - dueInfo(b.id).sort || new Date(b.created_at) - new Date(a.created_at));
+    list.innerHTML = orderedTests.map((test) => {
       const stats = questionStats(test.id);
       const submitted = latestAttempt(test.id, 'submitted');
       const inProgress = latestAttempt(test.id, 'in_progress');
       const date = window.formatDate(test.created_at);
       const minutes = estimatedMinutes(test, stats);
       const mainLabel = submitted ? 'Review' : inProgress ? 'Resume' : 'Start';
+      const due = dueInfo(test.id);
 
       return `
         <div class="test-card">
@@ -86,6 +102,7 @@
               ${stats.math ? `<span>Math: ${stats.math}</span>` : ''}
               <span>~${minutes} min</span>
               <span>${window.escapeHtml(date)}</span>
+              ${due.html}
             </div>
           </div>
           <div class="test-actions">
@@ -118,10 +135,11 @@
 
   async function loadTests() {
     try {
-      [tests, questions, attempts] = await Promise.all([
+      [tests, questions, attempts, assignments] = await Promise.all([
         window.satRest('tests?status=eq.published&select=id,name,status,created_at,rw_minutes,math_minutes,break_minutes&order=created_at.desc'),
         window.satRest('student_questions?select=test_id,section,module_key'),
         window.satRest(`test_attempts?student_id=eq.${encodeURIComponent(context.profile.id)}&select=id,test_id,status,started_at,submitted_at,total_score&order=started_at.desc`),
+        window.satRest(`test_assignments?student_id=eq.${encodeURIComponent(context.profile.id)}&select=test_id,due_at`),
       ]);
       render();
     } catch (err) {

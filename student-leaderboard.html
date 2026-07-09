@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/student-leaderboard.css">
+  <link rel="stylesheet" href="css/theme.css">
 </head>
 <body data-auth-role="student">
   <aside class="sidebar">
@@ -15,6 +16,7 @@
     <div class="nav-label">Menu</div>
     <a class="nav-item" href="student-home.html">Home</a>
     <a class="nav-item" href="student-tests.html">My tests</a>
+    <a class="nav-item" href="student-practice.html">Practice</a>
     <a class="nav-item" href="student-results.html">Results</a>
     <a class="nav-item active" href="student-leaderboard.html">Leaderboard</a>
     <div class="student" id="studentName">Student</div>
@@ -27,8 +29,16 @@
           <h1>Class leaderboard</h1>
           <p>Compare best submitted scores across the class.</p>
         </div>
-        <select id="testFilter" onchange="render()"><option value="overall">Overall best score</option></select>
+        <div class="filters">
+          <select id="testFilter"><option value="overall">Overall best score</option></select>
+          <select id="periodFilter">
+            <option value="all">All time</option>
+            <option value="month">This month</option>
+            <option value="week">This week</option>
+          </select>
+        </div>
       </div>
+      <div class="podium" id="podium"></div>
       <div class="panel">
         <table>
           <thead><tr><th>Rank</th><th>Student</th><th>Test</th><th>Score</th><th>Correct</th><th>Submitted</th></tr></thead>
@@ -40,6 +50,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
   <script src="js/shared.js"></script>
+  <script src="js/theme.js"></script>
   <script src="js/auth-guard.js"></script>
   <script src="js/student-leaderboard.js"></script>
 </body>

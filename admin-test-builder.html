@@ -67,6 +67,7 @@
       <div class="topbar-sep"></div>
       <span class="topbar-title">Test builder</span>
       <input class="test-name-input" type="text" id="testNameInput" placeholder="Test name e.g. SAT Practice Test 7" value=""/>
+      <input class="due-date-input" type="datetime-local" id="dueDateInput" title="Assignment due date"/>
       <div class="topbar-right">
         <button class="btn btn-outline" onclick="saveDraft()">
           <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
@@ -195,6 +196,13 @@
                     <option value="hard">Hard</option>
                   </select>
                 </div>
+                <div class="field">
+                  <label class="field-label">Answer type</label>
+                  <select id="qAnswerType" onchange="setAnswerType(this.value)">
+                    <option value="mcq">Multiple choice</option>
+                    <option value="spr">Student-produced response</option>
+                  </select>
+                </div>
               </div>
             </div>
           </div>
@@ -234,7 +242,7 @@
           </div>
 
           <!-- Answer choices -->
-          <div class="form-card">
+          <div class="form-card" id="choicesCard">
             <div class="form-card-head">
               <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
               Answer choices — click a letter to mark it as correct
@@ -247,6 +255,21 @@
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 <span id="correctHintText">No correct answer selected yet. Click a letter circle to mark it.</span>
               </div>
+            </div>
+          </div>
+
+          <!-- Student-produced response answers -->
+          <div class="form-card" id="sprAnswersCard" style="display:none;">
+            <div class="form-card-head">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 8h10M7 12h7M7 16h10"/></svg>
+              Accepted grid-in answers
+            </div>
+            <div class="form-card-body">
+              <div class="field">
+                <label class="field-label">Accepted answers <span>comma-separated</span></label>
+                <input type="text" id="qAnswerText" placeholder="3/4,0.75,.75" />
+              </div>
+              <div class="spr-hint">Fractions and decimals are compared on the server within 0.001, so 3/4, 0.75, and .75 can all grade as the same value.</div>
             </div>
           </div>
 

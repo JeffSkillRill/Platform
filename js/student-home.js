@@ -15,9 +15,13 @@
     window.satSetText('dateLabel', date);
   }
 
-  function setRingScore(score) {
+  let currentContext = null;
+  let currentBestScore = 0;
+
+  function setRingScore(score, targetScore) {
     const value = Number(score) || 0;
     const circle = document.querySelector('.ring-progress');
+    const target = document.querySelector('.ring-target');
     const circumference = 351.86;
     const offset = circumference * (1 - Math.min(value, 1600) / 1600);
     window.satSetText('ringScore', value ? value : '—');
@@ -25,6 +29,22 @@
       circle.style.setProperty('--ring-end', offset);
       circle.style.strokeDashoffset = offset;
     }
+    if (target) {
+      const targetValue = Number(targetScore) || 0;
+      const targetCirc = 301.59;
+      target.style.strokeDashoffset = targetValue ? targetCirc * (1 - Math.min(targetValue, 1600) / 1600) : targetCirc;
+    }
+    updateGoalText(value, targetScore);
+  }
+
+  function updateGoalText(score, targetScore) {
+    const target = Number(targetScore) || 0;
+    if (!target) {
+      window.satSetText('goalText', 'No score goal yet');
+      return;
+    }
+    const gap = Math.max(0, target - (Number(score) || 0));
+    window.satSetText('goalText', gap ? `${gap} points to your ${target} goal` : `Goal reached: ${target}`);
   }
 
   function submittedAttempts(rows) {
@@ -54,7 +74,83 @@
     );
   }
 
-  function renderStats(profile, currentAttempts, leaderboardRows, publishedTests) {
+  function renderTrend(attempts) {
+    const el = document.getElementById('trendChart');
+    const rows = [...attempts].sort((a, b) => new Date(a.submitted_at) - new Date(b.submitted_at)).slice(-10);
+    if (!el || rows.length < 2) {
+      if (el) el.innerHTML = '<span style="font-size:0.72rem;color:var(--text-faint);">Trend appears after 2 attempts</span>';
+      return;
+    }
+    const width = 220;
+    const height = 52;
+    const pad = 6;
+    const points = rows.map((row, index) => {
+      const x = pad + (index / Math.max(1, rows.length - 1)) * (width - pad * 2);
+      const y = height - pad - ((Number(row.total_score || 400) - 400) / 1200) * (height - pad * 2);
+      return { x, y, row };
+    });
+    el.innerHTML = `
+      <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Score trend">
+        <line class="trend-axis" x1="${pad}" y1="${height - pad}" x2="${width - pad}" y2="${height - pad}"></line>
+        <polyline class="trend-line" points="${points.map((p) => `${p.x},${p.y}`).join(' ')}"></polyline>
+        ${points.map((p) => `
+          <circle class="trend-dot" cx="${p.x}" cy="${p.y}" r="3.5">
+            <title>${p.row.total_score} total · R&W ${p.row.rw_score || '—'} · Math ${p.row.math_score || '—'}</title>
+          </circle>`).join('')}
+      </svg>`;
+  }
+
+  function localDay(value) {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return null;
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  }
+
+  function computeStreak(attempts, practiceEvents) {
+    const counts = new Map();
+    attempts.forEach((attempt) => {
+      const day = localDay(attempt.submitted_at);
+      if (day) counts.set(day, { attempt: true, practice: counts.get(day)?.practice || 0 });
+    });
+    practiceEvents.forEach((event) => {
+      const day = localDay(event.answered_at);
+      if (!day) return;
+      const current = counts.get(day) || { attempt: false, practice: 0 };
+      current.practice += 1;
+      counts.set(day, current);
+    });
+
+    let streak = 0;
+    const cursor = new Date();
+    while (true) {
+      const day = localDay(cursor);
+      const item = counts.get(day);
+      if (!item || (!item.attempt && item.practice < 5)) break;
+      streak += 1;
+      cursor.setDate(cursor.getDate() - 1);
+    }
+    return streak;
+  }
+
+  function renderBadges(attempts, practiceEvents) {
+    const rules = window.SAT_BADGE_RULES || [];
+    const bestScore = attempts.reduce((max, item) => Math.max(max, Number(item.total_score || 0)), 0);
+    const earned = rules.filter((rule) => rule.earned({ attempts, practiceEvents, bestScore }));
+    window.satSetText('badgeCount', `${earned.length}/${rules.length} earned`);
+    const strip = document.getElementById('badgeStrip');
+    if (!strip) return;
+    strip.innerHTML = rules.map((rule) => {
+      const isEarned = earned.includes(rule);
+      return `
+        <div class="badge ${isEarned ? 'earned' : ''}">
+          <div class="badge-icon">${isEarned ? '✓' : '•'}</div>
+          <div class="badge-name">${window.escapeHtml(rule.label)}</div>
+          <div class="badge-desc">${window.escapeHtml(rule.desc)}</div>
+        </div>`;
+    }).join('');
+  }
+
+  function renderStats(profile, currentAttempts, leaderboardRows, publishedTests, practiceEvents) {
     const sortedByDate = [...currentAttempts].sort((a, b) => new Date(a.submitted_at) - new Date(b.submitted_at));
     const best = [...currentAttempts].sort((a, b) => Number(b.total_score || 0) - Number(a.total_score || 0))[0];
     const latest = sortedByDate[sortedByDate.length - 1];
@@ -62,7 +158,8 @@
       ? Math.round(currentAttempts.reduce((sum, item) => sum + Number(item.total_score || 0), 0) / currentAttempts.length / 10) * 10
       : 0;
 
-    setRingScore(best?.total_score || 0);
+    currentBestScore = Number(best?.total_score || 0);
+    setRingScore(currentBestScore, profile.target_score);
     window.satSetText('mathScore', best?.math_score || '—');
     window.satSetText('rwScore', best?.rw_score || '—');
     window.satSetText('testsCompleted', currentAttempts.length);
@@ -75,6 +172,9 @@
     } else {
       window.satSetText('improvement', currentAttempts.length ? '0' : '—');
     }
+    renderTrend(currentAttempts);
+    window.satSetText('streakChip', `${computeStreak(currentAttempts, practiceEvents)}-day study streak`);
+    renderBadges(currentAttempts, practiceEvents);
 
     const rankIndex = leaderboardRows.findIndex((row) => row.student_id === profile.id);
     window.satSetText('lbRank', rankIndex >= 0 ? `#${rankIndex + 1}` : '—');
@@ -84,7 +184,23 @@
     );
   }
 
-  function renderTests(currentAttempts, tests, questions) {
+  function dueBadge(testId, assignments) {
+    const assignment = assignments.find((item) => item.test_id === testId && item.due_at);
+    if (!assignment) return '';
+    const due = new Date(assignment.due_at);
+    const now = new Date();
+    const hours = (due - now) / 36e5;
+    const status = hours < 0 ? 'overdue' : hours < 48 ? 'soon' : '';
+    const text = hours < 0 ? 'Overdue' : `Due ${window.formatShortDate(assignment.due_at)}`;
+    return `<span class="due-badge ${status}">${window.escapeHtml(text)}</span>`;
+  }
+
+  function dueSortValue(testId, assignments) {
+    const assignment = assignments.find((item) => item.test_id === testId && item.due_at);
+    return assignment?.due_at ? new Date(assignment.due_at).getTime() : Number.MAX_SAFE_INTEGER;
+  }
+
+  function renderTests(currentAttempts, tests, questions, assignments) {
     const list = document.getElementById('dashboardTestList');
     const latestByTest = new Map();
     currentAttempts.forEach((attempt) => {
@@ -100,9 +216,10 @@
         test,
         submitted,
         count: questions.filter((q) => q.test_id === test.id).length,
+        dueSort: dueSortValue(test.id, assignments),
         sortDate: submitted?.submitted_at || test.created_at,
       };
-    }).sort((a, b) => new Date(b.sortDate) - new Date(a.sortDate)).slice(0, 4);
+    }).sort((a, b) => a.dueSort - b.dueSort || new Date(b.sortDate) - new Date(a.sortDate)).slice(0, 4);
 
     if (!cards.length) {
       list.innerHTML = `
@@ -131,7 +248,7 @@
           <span class="test-status-dot ${statusClass}"></span>
           <div class="test-info">
             <div class="test-name">${window.escapeHtml(test.name)}</div>
-            <div class="test-meta">${window.escapeHtml(meta)}</div>
+            <div class="test-meta">${window.escapeHtml(meta)} ${dueBadge(test.id, assignments)}</div>
           </div>
           <span class="test-score-badge ${statusClass}">${window.escapeHtml(badgeText)}</span>
           <span class="test-arrow">›</span>
@@ -184,19 +301,21 @@
 
   async function loadDashboard(context) {
     try {
-      const [tests, questions, ownAttempts, leaderboardAttempts, profiles] = await Promise.all([
+      const [tests, questions, ownAttempts, leaderboardAttempts, profiles, assignments, practiceEvents] = await Promise.all([
         window.satRest('tests?status=eq.published&select=id,name,status,created_at&order=created_at.desc'),
         window.satRest('student_questions?select=test_id,section,module_key,order_num'),
         window.satRest(`test_attempts?student_id=eq.${encodeURIComponent(context.profile.id)}&status=eq.submitted&select=id,student_id,test_id,time_taken,correct_count,total_questions,rw_score,math_score,total_score,submitted_at&order=submitted_at.asc`),
         window.satRest('leaderboard_attempts?select=*&order=submitted_at.desc'),
         window.satRest('leaderboard_profiles?select=id,full_name,username'),
+        window.satRest(`test_assignments?student_id=eq.${encodeURIComponent(context.profile.id)}&select=test_id,due_at`),
+        window.satRest('practice_events?select=question_id,is_correct,answered_at&order=answered_at.desc'),
       ]);
 
       const currentAttempts = submittedAttempts(ownAttempts);
       const leaderboardRows = bestOverallRows(submittedAttempts(leaderboardAttempts));
 
-      renderStats(context.profile, currentAttempts, leaderboardRows, tests);
-      renderTests(currentAttempts, tests, questions);
+      renderStats(context.profile, currentAttempts, leaderboardRows, tests, practiceEvents);
+      renderTests(currentAttempts, tests, questions, assignments);
       renderLeaderboard(leaderboardRows, profiles, context.profile);
     } catch (err) {
       console.error(err);
@@ -218,9 +337,39 @@
     }
   }
 
+  function openGoalModal() {
+    const input = document.getElementById('targetScoreInput');
+    if (input) input.value = currentContext?.profile?.target_score || '';
+    document.getElementById('goalModal')?.classList.add('open');
+  }
+
+  function closeGoalModal() {
+    document.getElementById('goalModal')?.classList.remove('open');
+  }
+
+  async function saveTargetScore() {
+    const input = document.getElementById('targetScoreInput');
+    const value = Number(input?.value || 0);
+    if (!value || value < 400 || value > 1600) {
+      alert('Enter a target score between 400 and 1600.');
+      return;
+    }
+    try {
+      const updated = await window.satRpc('set_target_score', { p_target_score: value });
+      const profile = Array.isArray(updated) ? updated[0] : updated;
+      currentContext.profile.target_score = profile?.target_score || value;
+      setRingScore(currentBestScore, currentContext.profile.target_score);
+      closeGoalModal();
+    } catch (err) {
+      console.error(err);
+      alert('Could not save your goal. Run migration 002 first.');
+    }
+  }
+
   async function init() {
     const context = await window.SAT_AUTH_READY;
     if (!context) return;
+    currentContext = context;
     window.satSetSidebarUser(context.profile, {
       name: ['sidebarName'],
       avatar: ['sidebarAvatar', 'mobileAvatar'],
@@ -229,6 +378,10 @@
     setDate();
     await loadDashboard(context);
   }
+
+  window.openGoalModal = openGoalModal;
+  window.closeGoalModal = closeGoalModal;
+  window.saveTargetScore = saveTargetScore;
 
   init();
 }());

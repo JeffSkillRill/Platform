@@ -10,8 +10,13 @@
     return params.get('attemptId') || window.parseJson(localStorage.getItem('sat_last_result'), {}).attemptId;
   }
 
+  function hasResponse(row) {
+    if ((row.answer_type || 'mcq') === 'spr') return String(row.chosen_text || '').trim() !== '';
+    return row.chosen !== null && row.chosen !== undefined;
+  }
+
   function getStatus(row) {
-    if (row.chosen === null || row.chosen === undefined) return 'skipped';
+    if (!hasResponse(row)) return 'skipped';
     return row.is_correct ? 'correct' : 'wrong';
   }
 
@@ -24,7 +29,7 @@
 
   function renderSummary() {
     const correct = reviewRows.filter((row) => row.is_correct).length;
-    const skipped = reviewRows.filter((row) => row.chosen === null || row.chosen === undefined).length;
+    const skipped = reviewRows.filter((row) => !hasResponse(row)).length;
     const wrong = Math.max(0, reviewRows.length - correct - skipped);
     const title = test?.name || 'Test Results';
 
@@ -44,6 +49,71 @@
       <div class="sum-stat"><div class="sum-stat-val wrong">${wrong}</div><div class="sum-stat-lbl">Wrong</div></div>
       <div class="sum-stat"><div class="sum-stat-val skipped">${skipped}</div><div class="sum-stat-lbl">Skipped</div></div>
       <div class="sum-stat"><div class="sum-stat-val" style="color:#fff;">${window.escapeHtml(attempt?.total_score || '—')}</div><div class="sum-stat-lbl">Score</div></div>`;
+  }
+
+  function pctClass(percent) {
+    if (percent >= 80) return 'good';
+    if (percent >= 50) return 'ok';
+    return 'low';
+  }
+
+  function groupStats(rows, keyFn) {
+    const map = new Map();
+    rows.forEach((row) => {
+      const key = keyFn(row);
+      if (!map.has(key)) map.set(key, { label: key, total: 0, correct: 0 });
+      const item = map.get(key);
+      item.total += 1;
+      if (row.is_correct) item.correct += 1;
+    });
+    return Array.from(map.values()).sort((a, b) => a.label.localeCompare(b.label));
+  }
+
+  function renderStatRows(rows) {
+    return rows.map((item) => {
+      const percent = item.total ? Math.round((item.correct / item.total) * 100) : 0;
+      return `
+        <div class="break-row">
+          <div class="break-row-top">
+            <strong>${window.escapeHtml(item.label)}</strong>
+            <span>${item.correct}/${item.total} · ${percent}%</span>
+          </div>
+          <div class="break-track"><div class="break-fill ${pctClass(percent)}" style="width:${percent}%"></div></div>
+        </div>`;
+    }).join('');
+  }
+
+  function renderBreakdowns() {
+    const panel = document.getElementById('breakdownPanel');
+    if (!panel || !reviewRows.length) return;
+    const sections = [
+      ['rw', 'Reading & Writing'],
+      ['math', 'Math'],
+    ].map(([section, label]) => {
+      const rows = reviewRows.filter((row) => row.section === section);
+      if (!rows.length) return '';
+      return `
+        <section class="break-section">
+          <h3>${label}</h3>
+          ${renderStatRows(groupStats(rows, (row) => row.topic || 'General'))}
+        </section>`;
+    }).join('');
+
+    const difficulty = renderStatRows(groupStats(reviewRows, (row) => row.difficulty || 'medium'));
+    panel.innerHTML = `
+      <div class="breakdown-card">
+        <div class="breakdown-head">
+          <h2>Performance by topic</h2>
+          <span>Slow questions are marked after 90 seconds</span>
+        </div>
+        <div class="breakdown-grid">
+          ${sections}
+          <section class="break-section">
+            <h3>Difficulty</h3>
+            ${difficulty}
+          </section>
+        </div>
+      </div>`;
   }
 
   function renderList() {
@@ -75,8 +145,18 @@
     const imageUrl = window.safeImageUrl(row.image_url);
     const imgHtml = imageUrl ? `<img class="q-image" src="${window.escapeHtml(imageUrl)}" alt="Question image"/>` : '';
     const labelMap = { correct: 'Correct', wrong: 'Wrong', skipped: 'Skipped' };
+    const isSpr = (row.answer_type || 'mcq') === 'spr';
+    const timeSpent = Number(row.time_spent) || 0;
+    const timeTag = timeSpent > 0
+      ? `<span class="time-pill ${timeSpent > 90 ? 'slow' : ''}">${window.escapeHtml(window.formatTime(timeSpent))}</span>`
+      : '';
 
-    const choicesHtml = choices.map((choice, index) => {
+    const choicesHtml = isSpr ? `
+      <div class="spr-review">
+        <div><span>Your answer</span><strong>${window.escapeHtml(row.chosen_text || '—')}</strong></div>
+        <div><span>Accepted answer(s)</span><strong>${window.escapeHtml(row.answer_text || '—')}</strong></div>
+      </div>`
+      : choices.map((choice, index) => {
       const isCorrect = index === row.correct;
       const isChosen = index === chosen;
       let rowClass = 'neutral';
@@ -100,6 +180,7 @@
         <div class="q-review-head" onclick="toggleCard('${window.escapeHtml(row.question_id)}')">
           <div class="q-num-badge ${status}">${globalNum}</div>
           <div class="q-stem-preview">${window.escapeHtml(row.stem)}</div>
+          ${timeTag}
           <div class="result-tag ${status}">${labelMap[status]}</div>
           <svg class="expand-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
         </div>
@@ -139,6 +220,7 @@
       choices: window.parseJson(row.choices, []),
     }));
     renderSummary();
+    renderBreakdowns();
     renderList();
   }
 
@@ -156,5 +238,6 @@
 
   window.setFilter = setFilter;
   window.toggleCard = toggleCard;
+  window.downloadReport = () => window.print();
   init();
 }());

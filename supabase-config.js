@@ -41,11 +41,20 @@
   window.satGetProfile = async function satGetProfile(userId) {
     if (!userId) return null;
     const client = window.satGetClient();
-    const { data, error } = await client
+    let { data, error } = await client
       .from('profiles')
-      .select('id, full_name, username, role, is_active, created_at, last_login_at')
+      .select('id, full_name, username, role, is_active, target_score, created_at, last_login_at')
       .eq('id', userId)
       .single();
+    if (error && /target_score/i.test(error.message || '')) {
+      const fallback = await client
+        .from('profiles')
+        .select('id, full_name, username, role, is_active, created_at, last_login_at')
+        .eq('id', userId)
+        .single();
+      data = fallback.data ? { ...fallback.data, target_score: null } : null;
+      error = fallback.error;
+    }
     if (error) throw error;
     return data;
   };

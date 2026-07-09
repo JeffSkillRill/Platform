@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/student-home.css">
+  <link rel="stylesheet" href="css/theme.css">
 </head>
 <body data-auth-role="student">
 
@@ -35,6 +36,11 @@
     <a class="nav-item" href="student-tests.html">
       <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
       My tests
+    </a>
+
+    <a class="nav-item" href="student-practice.html">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-6H6"/></svg>
+      Practice
     </a>
 
     <a class="nav-item" href="student-results.html">
@@ -75,7 +81,7 @@
       <!-- Greeting -->
       <div class="greeting fade-up">
         <h1 id="greetingText">Good morning, Abdujafar 👋</h1>
-        <p>Here's your progress so far. Keep pushing.</p>
+        <p>Here's your progress so far. Keep pushing. <span class="streak-chip" id="streakChip">— day streak</span></p>
       </div>
 
       <!-- Score hero + stats -->
@@ -106,12 +112,23 @@
                   transform-origin: 70px 70px;
                 "
               />
+              <circle cx="70" cy="70" r="48"
+                fill="none"
+                stroke="#f59e0b"
+                stroke-width="4"
+                stroke-linecap="round"
+                stroke-dasharray="301.59"
+                class="ring-target"
+                style="transform: rotate(-90deg); transform-origin: 70px 70px; stroke-dashoffset:301.59;"
+              />
             </svg>
             <div class="ring-center">
               <span class="ring-score" id="ringScore">—</span>
               <span class="ring-max">/ 1600</span>
             </div>
           </div>
+          <button class="goal-btn" type="button" onclick="openGoalModal()">Set score goal</button>
+          <div class="goal-text" id="goalText">No score goal yet</div>
           <div class="score-sub-row">
             <div class="score-sub">
               <span class="score-sub-val" id="mathScore">—</span>
@@ -141,6 +158,7 @@
             <span class="stat-card-label">Score improvement</span>
             <span class="stat-card-value green" id="improvement">—</span>
             <span class="stat-card-sub">since first test</span>
+            <div class="trend-chart" id="trendChart"></div>
           </div>
           <div class="stat-card fade-up">
             <span class="stat-card-label">Leaderboard rank</span>
@@ -149,6 +167,14 @@
           </div>
         </div>
       </div>
+
+      <section class="badges-card fade-up">
+        <div class="section-head">
+          <span class="section-title">Badges</span>
+          <span class="section-link" id="badgeCount">— earned</span>
+        </div>
+        <div class="badge-strip" id="badgeStrip"></div>
+      </section>
 
       <!-- Lower two-column -->
       <div class="lower-grid">
@@ -202,10 +228,23 @@
       </div>
     </div>
   </div>
+  <div class="goal-modal" id="goalModal">
+    <div class="goal-box">
+      <h2>Set target score</h2>
+      <p>Choose a realistic goal between 400 and 1600. You can update it anytime.</p>
+      <input id="targetScoreInput" type="number" min="400" max="1600" step="10" placeholder="1450">
+      <div class="goal-actions">
+        <button type="button" class="goal-cancel" onclick="closeGoalModal()">Cancel</button>
+        <button type="button" class="goal-save" onclick="saveTargetScore()">Save goal</button>
+      </div>
+    </div>
+  </div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
   <script src="js/shared.js"></script>
+  <script src="js/theme.js"></script>
   <script src="js/auth-guard.js"></script>
+  <script src="js/badges.js"></script>
   <script src="js/student-home.js"></script>
 </body>
 </html>
