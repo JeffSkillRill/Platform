@@ -113,7 +113,8 @@ begin
 end;
 $$;
 
-create or replace view public.student_questions
+drop view if exists public.student_questions;
+create view public.student_questions
 with (security_invoker = true)
 as
 select
@@ -265,7 +266,8 @@ begin
 end;
 $$;
 
-create or replace function public.get_attempt_review(p_attempt_id uuid)
+drop function if exists public.get_attempt_review(uuid);
+create function public.get_attempt_review(p_attempt_id uuid)
 returns table (
   question_id uuid,
   section text,
