@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vocabulary - Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/admin-vocabulary.css">
+</head>
+<body data-auth-role="admin">
+  <aside class="sidebar">
+    <div class="brand">SAT Prep <small>Admin panel</small></div>
+    <div class="nav-label">Main</div>
+    <a class="nav-item" href="admin-dashboard.html">Dashboard</a>
+    <a class="nav-item" href="admin-students.html">Students</a>
+    <a class="nav-item" href="admin-classes.html">Classes</a>
+    <a class="nav-item" href="admin-tests.html">Tests</a>
+    <a class="nav-item" href="admin-question-bank.html">Question Bank</a>
+    <a class="nav-item active" href="admin-vocabulary.html">Vocabulary</a>
+    <a class="nav-item" href="admin-leaderboard.html">Leaderboard</a>
+  </aside>
+
+  <main class="main">
+    <div class="topbar"><div class="topbar-title">Vocabulary</div><div class="topbar-actions"><button class="btn btn-primary" id="newListBtn">New list</button></div></div>
+    <section class="content">
+      <div class="page-head"><h1>Vocabulary</h1><p>Manage vocabulary lists and their words.</p></div>
+      <div id="adminVocabApp"></div>
+    </section>
+  </main>
+
+  <div class="modal" id="listModal">
+    <form class="modal-box" id="listForm">
+      <h2>Vocabulary list</h2><input type="hidden" id="listId">
+      <label for="listTitle">Title</label><input id="listTitle" required>
+      <label for="listDescription">Description</label><textarea id="listDescription" rows="2"></textarea>
+      <label for="listClass">Class scope</label><select id="listClass"><option value="">All students</option></select>
+      <div class="modal-actions"><button class="btn btn-secondary" type="button" id="cancelListBtn">Cancel</button><button class="btn btn-primary" type="submit">Save</button></div>
+    </form>
+  </div>
+  <div class="modal" id="adminWordModal">
+    <form class="modal-box" id="adminWordForm">
+      <h2>Add word</h2><input type="hidden" id="adminWordId"><input type="hidden" id="adminWordListId">
+      <label for="adminWordInput">Word</label><input id="adminWordInput" required>
+      <label for="adminDefinitionInput">Definition</label><textarea id="adminDefinitionInput" required rows="3"></textarea>
+      <label for="adminSynonymsInput">Synonyms</label><input id="adminSynonymsInput" placeholder="comma, separated">
+      <label for="adminAntonymsInput">Antonyms</label><input id="adminAntonymsInput" placeholder="comma, separated">
+      <label for="adminExampleInput">Example</label><textarea id="adminExampleInput" rows="2"></textarea>
+      <div class="modal-actions"><button class="btn btn-secondary" type="button" id="cancelAdminWordBtn">Cancel</button><button class="btn btn-primary" type="submit">Save word</button></div>
+    </form>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="js/shared.js"></script>
+  <script src="js/auth-guard.js"></script>
+  <script src="js/admin-vocabulary.js"></script>
+</body>
+</html>

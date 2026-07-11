@@ -37,6 +37,7 @@
     let context = null;
     let editingTestId = params.get('id');
     let originalStatus = 'draft';
+    let classOptions = [];
 
     function toDatetimeLocal(value) {
       if (!value) return '';
@@ -53,14 +54,24 @@
 
     // ---- Load saved draft or existing DB test ----
     async function loadDraft() {
+      classOptions = await window.satRest('classes?is_archived=eq.false&select=id,name&order=name.asc').catch(() => []);
+      const classSelect = document.getElementById('assignClassSelect');
+      if (classSelect) {
+        classSelect.innerHTML = '<option value="">Assign to all students</option>' + classOptions
+          .map((item) => `<option value="${window.escapeHtml(item.id)}">${window.escapeHtml(item.name)}</option>`)
+          .join('');
+      }
+
       if (editingTestId) {
         const testRows = await window.satRest(`tests?id=eq.${encodeURIComponent(editingTestId)}&select=*`);
         const test = testRows[0];
         if (!test) throw new Error('Test not found.');
         originalStatus = test.status || 'draft';
         document.getElementById('testNameInput').value = test.name || '';
-        const assignmentRows = await window.satRest(`test_assignments?test_id=eq.${encodeURIComponent(editingTestId)}&select=due_at&limit=1`);
-        document.getElementById('dueDateInput').value = toDatetimeLocal(assignmentRows[0]?.due_at);
+        const assignmentRows = await window.satRest(`test_assignments?test_id=eq.${encodeURIComponent(editingTestId)}&select=due_at,class_id`);
+        const selectedAssignment = assignmentRows.find((row) => row.class_id) || assignmentRows[0];
+        document.getElementById('dueDateInput').value = toDatetimeLocal(selectedAssignment?.due_at);
+        if (classSelect) classSelect.value = selectedAssignment?.class_id || '';
 
         const questions = await window.satRest(`admin_questions?test_id=eq.${encodeURIComponent(editingTestId)}&select=*&order=module_key.asc,order_num.asc`);
         moduleQuestions = { rw1:[], rw2:[], math1:[], math2:[] };
@@ -90,6 +101,7 @@
         moduleQuestions = data.moduleQuestions || { rw1:[], rw2:[], math1:[], math2:[] };
         document.getElementById('testNameInput').value = data.name || '';
         document.getElementById('dueDateInput').value = data.dueAt ? toDatetimeLocal(data.dueAt) : '';
+        if (classSelect) classSelect.value = data.classId || '';
       }
     }
 
@@ -99,7 +111,12 @@
       if (!name) { showToast('Please enter a test name first.'); return; }
       if (currentQIndex !== null) collectCurrentForm();
       const key = editingTestId ? `sat_draft_test_${editingTestId}` : 'sat_draft_test_new';
-      localStorage.setItem(key, JSON.stringify({ name, moduleQuestions, dueAt: dueAtIso() }));
+      localStorage.setItem(key, JSON.stringify({
+        name,
+        moduleQuestions,
+        dueAt: dueAtIso(),
+        classId: document.getElementById('assignClassSelect')?.value || '',
+      }));
       showToast('Draft saved locally ✓');
     }
 
@@ -110,6 +127,7 @@
       if (currentQIndex !== null) collectCurrentForm();
       const all = allQuestions();
       const dueAt = dueAtIso();
+      const classId = document.getElementById('assignClassSelect')?.value || '';
       if (all.length === 0) { showToast('Add at least one question before publishing.'); return; }
 
       const incomplete = all.filter((q) => {
@@ -168,21 +186,28 @@
         });
 
         await window.satInsert('questions', questionRows);
-        const students = await window.satRest('profiles?role=eq.student&is_active=eq.true&select=id');
-        if (students.length) {
-          await window.satRest('test_assignments', {
-            method: 'POST',
-            headers: { Prefer: 'resolution=ignore-duplicates,return=minimal' },
-            body: students.map((student) => ({
-              test_id: testId,
-              student_id: student.id,
-              assigned_by: context.profile.id,
-              due_at: dueAt,
-            })),
-          });
-          await window.satPatch(`test_assignments?test_id=eq.${encodeURIComponent(testId)}`, {
+        await window.satDelete(`test_assignments?test_id=eq.${encodeURIComponent(testId)}`);
+        if (classId) {
+          await window.satInsert('test_assignments', {
+            test_id: testId,
+            class_id: classId,
+            assigned_by: context.profile.id,
             due_at: dueAt,
           }, 'return=minimal');
+        } else {
+          const students = await window.satRest('profiles?role=eq.student&is_active=eq.true&select=id');
+          if (students.length) {
+            await window.satRest('test_assignments', {
+              method: 'POST',
+              headers: { Prefer: 'resolution=ignore-duplicates,return=minimal' },
+              body: students.map((student) => ({
+                test_id: testId,
+                student_id: student.id,
+                assigned_by: context.profile.id,
+                due_at: dueAt,
+              })),
+            });
+          }
         }
         await window.satPatch(`tests?id=eq.${encodeURIComponent(testId)}`, {
           name,

@@ -1,5 +1,5 @@
 -- ================================================================
--- SAT Practice Test A — SPR (grid-in) upgrade
+-- SAT Practice Test A — SPR (grid-in) add-on
 -- ================================================================
 -- RUN THIS ONLY AFTER Codex has implemented CODEX-FEATURES.md
 -- Phase 1, item 7 (student-produced response questions), which adds:

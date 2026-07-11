@@ -185,7 +185,9 @@
   }
 
   function dueBadge(testId, assignments) {
-    const assignment = assignments.find((item) => item.test_id === testId && item.due_at);
+    const assignment = assignments
+      .filter((item) => item.test_id === testId && item.due_at)
+      .sort((a, b) => new Date(a.due_at) - new Date(b.due_at))[0];
     if (!assignment) return '';
     const due = new Date(assignment.due_at);
     const now = new Date();
@@ -196,7 +198,9 @@
   }
 
   function dueSortValue(testId, assignments) {
-    const assignment = assignments.find((item) => item.test_id === testId && item.due_at);
+    const assignment = assignments
+      .filter((item) => item.test_id === testId && item.due_at)
+      .sort((a, b) => new Date(a.due_at) - new Date(b.due_at))[0];
     return assignment?.due_at ? new Date(assignment.due_at).getTime() : Number.MAX_SAFE_INTEGER;
   }
 
@@ -307,7 +311,7 @@
         window.satRest(`test_attempts?student_id=eq.${encodeURIComponent(context.profile.id)}&status=eq.submitted&select=id,student_id,test_id,time_taken,correct_count,total_questions,rw_score,math_score,total_score,submitted_at&order=submitted_at.asc`),
         window.satRest('leaderboard_attempts?select=*&order=submitted_at.desc'),
         window.satRest('leaderboard_profiles?select=id,full_name,username'),
-        window.satRest(`test_assignments?student_id=eq.${encodeURIComponent(context.profile.id)}&select=test_id,due_at`),
+        window.satRest('test_assignments?select=test_id,due_at,class_id'),
         window.satRest('practice_events?select=question_id,is_correct,answered_at&order=answered_at.desc'),
       ]);
 

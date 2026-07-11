@@ -27,7 +27,9 @@
   }
 
   function dueInfo(testId) {
-    const assignment = assignments.find((item) => item.test_id === testId && item.due_at);
+    const assignment = assignments
+      .filter((item) => item.test_id === testId && item.due_at)
+      .sort((a, b) => new Date(a.due_at) - new Date(b.due_at))[0];
     if (!assignment) return { html: '', sort: Number.MAX_SAFE_INTEGER };
     const due = new Date(assignment.due_at);
     const hours = (due - new Date()) / 36e5;
@@ -139,7 +141,7 @@
         window.satRest('tests?status=eq.published&select=id,name,status,created_at,rw_minutes,math_minutes,break_minutes&order=created_at.desc'),
         window.satRest('student_questions?select=test_id,section,module_key'),
         window.satRest(`test_attempts?student_id=eq.${encodeURIComponent(context.profile.id)}&select=id,test_id,status,started_at,submitted_at,total_score&order=started_at.desc`),
-        window.satRest(`test_assignments?student_id=eq.${encodeURIComponent(context.profile.id)}&select=test_id,due_at`),
+        window.satRest('test_assignments?select=test_id,due_at,class_id'),
       ]);
       render();
     } catch (err) {

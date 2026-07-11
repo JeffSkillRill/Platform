@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Classes - Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/admin-classes.css">
+</head>
+<body data-auth-role="admin">
+  <aside class="sidebar">
+    <div class="brand">SAT Prep <small>Admin panel</small></div>
+    <div class="nav-label">Main</div>
+    <a class="nav-item" href="admin-dashboard.html">Dashboard</a>
+    <a class="nav-item" href="admin-students.html">Students</a>
+    <a class="nav-item active" href="admin-classes.html">Classes</a>
+    <a class="nav-item" href="admin-tests.html">Tests</a>
+    <a class="nav-item" href="admin-question-bank.html">Question Bank</a>
+    <a class="nav-item" href="admin-vocabulary.html">Vocabulary</a>
+    <a class="nav-item" href="admin-leaderboard.html">Leaderboard</a>
+  </aside>
+
+  <main class="main">
+    <div class="topbar"><div class="topbar-title">Classes</div><div class="topbar-actions"><button class="btn btn-primary" id="newClassBtn">New class</button></div></div>
+    <section class="content">
+      <div class="page-head"><h1>Classes</h1><p>Organize students into groups and assign tests to a whole class.</p></div>
+      <div class="class-layout">
+        <div class="class-grid" id="classGrid"><div class="empty-state">Loading classes...</div></div>
+        <div class="card class-detail" id="classDetail"><div class="empty-state">Select a class to manage members and assignments.</div></div>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal" id="classModal">
+    <form class="modal-box" id="classForm">
+      <h2 id="classModalTitle">New class</h2>
+      <input type="hidden" id="classId">
+      <label for="className">Name</label><input id="className" required>
+      <label for="classDescription">Description</label><textarea id="classDescription" rows="3"></textarea>
+      <div class="modal-actions"><button class="btn btn-secondary" type="button" id="cancelClassBtn">Cancel</button><button class="btn btn-primary" type="submit">Save class</button></div>
+    </form>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="js/shared.js"></script>
+  <script src="js/auth-guard.js"></script>
+  <script src="js/admin-classes.js"></script>
+</body>
+</html>

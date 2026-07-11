@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vocabulary - SAT Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/student-vocabulary.css">
+</head>
+<body data-auth-role="student">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="logo-wrap"><div class="logo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#0d2137" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div><div class="logo-text">SAT Prep <small>Student portal</small></div></div></div>
+    <p class="nav-label">Menu</p>
+    <a class="nav-item" href="student-home.html"><svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h4v-6h4v6h4a1 1 0 001-1V10"/></svg>Home</a>
+    <a class="nav-item" href="student-tests.html"><svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h6l6 6v10a2 2 0 01-2 2z"/></svg>My Tests</a>
+    <a class="nav-item" href="student-classes.html"><svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.4-1.9M17 20H7m10 0v-2a5 5 0 00-10 0v2m8-13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>Classes</a>
+    <a class="nav-item" href="student-question-bank.html"><svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 5a2 2 0 012-2h12a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm4 2h8M8 11h8M8 15h5"/></svg>Question Bank</a>
+    <a class="nav-item active" href="student-vocabulary.html"><svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 5.5A2.5 2.5 0 016.5 3H11v17H6.5A2.5 2.5 0 014 17.5v-12zM20 5.5A2.5 2.5 0 0017.5 3H13v17h4.5a2.5 2.5 0 002.5-2.5v-12z"/></svg>Vocabulary</a>
+    <a class="nav-item" href="student-practice.html"><svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-6H6"/></svg>Practice</a>
+    <a class="nav-item" href="student-results.html"><svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 19V9m7 10V5m7 14v-7"/></svg>Results</a>
+    <a class="nav-item" href="student-leaderboard.html"><svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3l2.3 4.7 5.2.8-3.8 3.7.9 5.3-4.6-2.5-4.6 2.5.9-5.3-3.8-3.7 5.2-.8L12 3z"/></svg>Leaderboard</a>
+    <div class="sidebar-bottom"><div class="student-chip"><div class="s-avatar" id="vocabAvatar">ST</div><div><div class="s-name" id="vocabName">Student</div><div class="s-role">Student</div></div></div></div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar"><span class="topbar-title">Vocabulary</span></div>
+    <div class="content">
+      <div class="page-head"><h1>Vocabulary</h1><p>Build your vocabulary with personal words and teacher assignments.</p></div>
+      <div class="search-wrap"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="m21 21-4.35-4.35"/></svg><input id="vocabSearch" placeholder="Search visible words..."></div>
+      <div id="vocabApp"></div>
+    </div>
+  </div>
+
+  <button class="fab" id="quickAddWordBtn" title="Add word" aria-label="Add word">+</button>
+  <div class="modal" id="wordModal">
+    <form class="modal-box" id="wordForm">
+      <h2>Add word</h2>
+      <input type="hidden" id="wordId">
+      <label for="wordInput">Word</label><input id="wordInput" required>
+      <label for="definitionInput">Definition</label><textarea id="definitionInput" required rows="3"></textarea>
+      <label for="synonymsInput">Synonyms</label><input id="synonymsInput" placeholder="comma, separated">
+      <label for="antonymsInput">Antonyms</label><input id="antonymsInput" placeholder="comma, separated">
+      <label for="exampleInput">Example</label><textarea id="exampleInput" rows="2"></textarea>
+      <div class="modal-actions"><button class="btn btn-secondary" type="button" id="cancelWordBtn">Cancel</button><button class="btn btn-primary" type="submit">Save</button></div>
+    </form>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="js/shared.js"></script>
+  <script src="js/auth-guard.js"></script>
+  <script src="js/student-vocabulary.js"></script>
+</body>
+</html>
