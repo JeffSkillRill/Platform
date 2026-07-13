@@ -1,0 +1,135 @@
+/* ============================================================
+   Shared mobile/responsive layer — loaded AFTER each page's CSS.
+   Turns the fixed sidebar into an off-canvas drawer, adds a
+   mobile topbar with hamburger (injected by js/mobile-nav.js),
+   and makes tables/topbars usable on small screens.
+   ============================================================ */
+
+.mobile-topbar .satm-burger,
+.satm-topbar,
+.satm-overlay { display: none; }
+
+@media (max-width: 768px) {
+  html { overflow-x: hidden; }
+  body { overflow-x: hidden; }
+
+  /* ---------- Mobile topbar (injected if page has none) ---------- */
+  .satm-topbar {
+    display: flex;
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 54px;
+    background: #0d2137;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0 0.85rem;
+    z-index: 300;
+  }
+  .satm-topbar .satm-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Hamburger button (also injected into an existing .mobile-topbar) */
+  .satm-burger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px; height: 40px;
+    min-width: 40px;
+    border: none;
+    border-radius: 9px;
+    background: rgba(255,255,255,0.08);
+    cursor: pointer;
+    padding: 0;
+  }
+  .satm-burger svg { width: 20px; height: 20px; stroke: #fff; }
+  .mobile-topbar .satm-burger { display: inline-flex; }
+
+  /* ---------- Sidebar becomes an off-canvas drawer ---------- */
+  .sidebar, .nav-sidebar {
+    display: flex !important;
+    position: fixed !important;
+    top: 0; left: 0; bottom: 0;
+    width: min(280px, 84vw) !important;
+    transform: translateX(-105%);
+    transition: transform 0.25s ease;
+    z-index: 400;
+    box-shadow: 0 0 60px rgba(11,22,40,0.45);
+    overflow-y: auto;
+  }
+  body.satm-nav-open .sidebar,
+  body.satm-nav-open .nav-sidebar { transform: translateX(0); }
+
+  .satm-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(11,22,40,0.55);
+    z-index: 350;
+  }
+  body.satm-nav-open .satm-overlay { display: block; }
+  body.satm-nav-open { overflow: hidden; }
+
+  /* Comfortable tap targets in the drawer */
+  .sidebar .nav-item, .nav-sidebar .nav-item {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+
+  /* ---------- Main column ---------- */
+  .main {
+    margin-left: 0 !important;
+    padding-top: 54px;
+  }
+
+  /* Desktop topbar: let it wrap instead of overflowing */
+  .topbar {
+    height: auto !important;
+    min-height: 54px;
+    flex-wrap: wrap;
+    padding: 0.6rem 1rem !important;
+    gap: 0.5rem 0.75rem;
+    position: static !important;
+  }
+  .topbar-right { margin-left: auto; }
+
+  /* The injected mobile topbar already shows the page title —
+     hide the duplicate, and collapse title-only desktop topbars. */
+  .topbar .topbar-title { display: none; }
+  .topbar:has(.topbar-title:only-child) { display: none; }
+
+  .content { padding: 1.25rem 1rem 2.75rem !important; }
+
+  /* ---------- Tables scroll horizontally instead of crushing ---------- */
+  .panel, .table-card, .table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .panel table, .table-card table, .table-wrap table { min-width: 540px; }
+
+  /* Grid/flex parents must be allowed to shrink, or the wide table
+     pushes the whole page sideways instead of scrolling in place. */
+  .content div:has(.table-card),
+  .content div:has(.panel),
+  .content div:has(table) { min-width: 0; max-width: 100%; }
+
+  /* ---------- Generic grid/card fallbacks ---------- */
+  .stats-row, .stats-grid { grid-template-columns: 1fr 1fr; }
+
+  /* Buttons: keep readable, avoid two-line wraps */
+  .topbar .btn, .topbar-right .btn {
+    white-space: nowrap;
+    padding: 0.45rem 0.7rem;
+    font-size: 0.78rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .stats-row, .stats-grid { grid-template-columns: 1fr 1fr; }
+  .content { padding: 1rem 0.85rem 2.5rem !important; }
+}

@@ -557,4 +557,35 @@
     .publish-bar-text { font-size: 0.85rem; font-weight: 600; color: var(--navy); }
     .publish-bar-text small { display: block; font-weight: 400; font-size: 0.75rem; opacity: 0.7; }
 
+    /* ===== RESPONSIVE: stack builder panes on small screens ===== */
+    @media (max-width: 900px) {
+      .builder-body {
+        flex-direction: column;
+        overflow: visible;
+      }
+      .list-panel {
+        position: static;
+        width: 100%;
+        height: auto;
+        max-height: none;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        overflow: visible;
+      }
+      .q-list { max-height: 40vh; overflow-y: auto; }
+      .form-panel { padding: 1.25rem 1rem 3rem; }
+    }
+
+    @media (max-width: 768px) {
+      .topbar { flex-wrap: wrap; height: auto; min-height: 54px; padding: 0.6rem 1rem; }
+      .topbar-sep { display: none; }
+      .test-name-input { min-width: 0; flex: 1 1 140px; }
+      .due-date-input { flex: 1 1 130px; min-width: 0; }
+      .topbar-right { margin-left: 0; flex: 1 1 100%; justify-content: flex-end; }
+      .meta-row { grid-template-columns: 1fr; }
+      .form-head { flex-wrap: wrap; gap: 0.6rem; }
+      .est-sections { flex-wrap: wrap; }
+      .choices-grid { grid-template-columns: 1fr; }
+    }
+
     @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }

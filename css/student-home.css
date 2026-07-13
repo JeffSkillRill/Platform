@@ -722,7 +722,7 @@
     .goal-cancel { background: var(--bg); color: var(--text-muted); }
     .goal-save { background: var(--accent); color: var(--navy); }
 
-    @media (max-width: 680px) {
+    @media (max-width: 768px) {
       .sidebar { display: none; }
       .mobile-topbar { display: flex; }
       .main { margin-left: 0; padding-top: 54px; }

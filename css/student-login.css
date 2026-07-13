@@ -13,6 +13,7 @@
       --error:        #e05252;
     }
 
+    html { overflow-x: hidden; }
     body {
       font-family: 'Inter', sans-serif;
       background: var(--teal);
@@ -309,3 +310,8 @@
     .footer-link a:hover { text-decoration: underline; }
 
     @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+    /* Mobile: keep the decorative watermark inside the viewport */
+    @media (max-width: 768px) {
+      body::before { right: 0; letter-spacing: -3px; font-size: clamp(110px, 22vw, 200px); }
+    }

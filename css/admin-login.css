@@ -14,6 +14,7 @@
       --error:        #e05252;
     }
 
+    html { overflow-x: hidden; }
     body {
       font-family: 'Inter', sans-serif;
       background: var(--teal);
@@ -240,3 +241,8 @@
     .global-error.visible { display: block; }
 
     @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+    /* Mobile: keep the decorative watermark inside the viewport */
+    @media (max-width: 768px) {
+      body::before { right: 0; bottom: 0; letter-spacing: -4px; font-size: clamp(150px, 30vw, 300px); }
+    }
