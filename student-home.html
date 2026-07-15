@@ -3,27 +3,36 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Home — SAT Platform</title>
+  <title>Home — 4Prep</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/student-home.css">
   <link rel="stylesheet" href="css/mobile.css">
+  <meta name="theme-color" content="#3CDBBF">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/brand/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/brand/favicon-16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/brand/4prep-logo-color-180.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="css/logo.css">
+  <script src="js/logo.js" defer></script>
+  <script src="js/theme.js" defer></script>
 </head>
 <body data-auth-role="student">
 
   <!-- Mobile top bar -->
   <div class="mobile-topbar">
-    <div class="logo-mark" style="font-family:'Space Grotesk',sans-serif;font-weight:700;color:#fff;font-size:1rem;display:flex;align-items:center;gap:6px;">
-      SAT <span style="background:#3adbba;color:#0B1628;font-size:0.6rem;font-weight:700;padding:2px 5px;border-radius:3px;">PREP</span>
-    </div>
+    <a class="brand-lockup" href="student-home.html" aria-label="4Prep student home"><fourprep-logo size="36" variant="white"></fourprep-logo></a>
     <div class="avatar" style="width:28px;height:28px;font-size:0.65rem;" id="mobileAvatar">AJ</div>
   </div>
 
   <!-- Sidebar -->
   <aside class="sidebar">
     <div class="sidebar-logo">
-      <div class="logo-mark">SAT <span>PREP</span></div>
+      <a class="brand-lockup" href="student-home.html" aria-label="4Prep student home">
+        <fourprep-logo size="40" variant="white"></fourprep-logo>
+        <span class="brand-copy">4Prep <small>Student portal</small></span>
+      </a>
     </div>
 
     <p class="nav-section-label">Menu</p>
@@ -115,7 +124,7 @@
               />
               <circle cx="70" cy="70" r="56"
                 fill="none"
-                stroke="#3adbba"
+                stroke="#3CDBBF"
                 stroke-width="10"
                 stroke-linecap="round"
                 stroke-dasharray="351.86"

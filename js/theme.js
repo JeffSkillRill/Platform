@@ -1,21 +1,41 @@
 (function () {
   const KEY = 'sat_theme';
 
+  function getSavedTheme() {
+    try {
+      return localStorage.getItem(KEY);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function saveTheme(theme) {
+    try {
+      localStorage.setItem(KEY, theme);
+    } catch (_) {
+      // Theme still works for the current page when storage is unavailable.
+    }
+  }
+
   function preferredTheme() {
-    const saved = localStorage.getItem(KEY);
+    const saved = getSavedTheme();
     if (saved === 'light' || saved === 'dark') return saved;
     return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   }
 
   function applyTheme(theme) {
     document.documentElement.dataset.theme = theme;
-    localStorage.setItem(KEY, theme);
+    saveTheme(theme);
     const button = document.querySelector('[data-theme-toggle]');
-    if (button) button.textContent = theme === 'dark' ? 'Light mode' : 'Dark mode';
+    if (button) {
+      const nextTheme = theme === 'dark' ? 'light' : 'dark';
+      button.textContent = `${nextTheme === 'dark' ? 'Dark' : 'Light'} mode`;
+      button.setAttribute('aria-label', `Switch to ${nextTheme} mode`);
+    }
   }
 
   function injectToggle() {
-    const sidebar = document.querySelector('.sidebar');
+    const sidebar = document.querySelector('.sidebar, .nav-sidebar');
     if (!sidebar || sidebar.querySelector('[data-theme-toggle]')) return;
     const button = document.createElement('button');
     button.type = 'button';

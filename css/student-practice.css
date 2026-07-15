@@ -1,6 +1,6 @@
 *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
 :root {
-  --bg:#f0f4f8; --surface:#fff; --navy:#0b1628; --accent:#3adbba;
+  --bg:#f0f4f8; --surface:#fff; --navy:#0b1628; --accent:#3CDBBF;
   --accent-light:#f0fdf9; --text:#0f172a; --text-muted:#64748b;
   --text-faint:#94a3b8; --border:#e2e8f0; --green:#059669;
   --green-light:#ecfdf5; --red:#dc2626; --red-light:#fef2f2;
@@ -23,7 +23,7 @@ body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); 
   font-size:0.88rem; font-weight:600; border-left:3px solid transparent;
 }
 .nav-item:hover { background:rgba(255,255,255,0.05); color:#fff; }
-.nav-item.active { background:rgba(58,219,186,0.15); color:#fff; border-left-color:var(--accent); }
+.nav-item.active { background:rgba(60,219,191,0.15); color:#fff; border-left-color:var(--accent); }
 .sidebar-bottom { margin-top:auto; padding:0 1rem; }
 .student-chip {
   display:flex; align-items:center; gap:0.7rem; background:rgba(255,255,255,0.06);

@@ -1,7 +1,7 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --teal:        #3adbba;
+      --teal:        #3CDBBF;
       --teal-dark:   #2bc4a4;
       --teal-darker: #1fa88c;
       --teal-light:  #e8faf6;
@@ -217,7 +217,7 @@
 
     .est-label {
       font-size: 0.62rem; font-weight: 700; letter-spacing: 0.1em;
-      text-transform: uppercase; color: rgba(58,219,186,0.6);
+      text-transform: uppercase; color: rgba(60,219,191,0.6);
       margin-bottom: 0.5rem;
     }
 
@@ -239,7 +239,7 @@
 
     .est-section {
       flex: 1;
-      background: rgba(58,219,186,0.08);
+      background: rgba(60,219,191,0.08);
       border-radius: 7px; padding: 0.45rem 0.6rem;
     }
 
@@ -430,7 +430,7 @@
     textarea:focus, input[type="text"]:focus, select:focus {
       border-color: var(--teal);
       background: #fff;
-      box-shadow: 0 0 0 3px rgba(58,219,186,0.15);
+      box-shadow: 0 0 0 3px rgba(60,219,191,0.15);
     }
     textarea::placeholder, input::placeholder { color: #9ecec5; }
     select { cursor: pointer; }

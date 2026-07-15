@@ -17,7 +17,7 @@
       return;
     }
 
-    const colors = ['#6D28D9', '#0891B2', '#3adbba', '#059669', '#DC2626', '#D97706', '#7C3AED', '#B45309'];
+    const colors = ['#6D28D9', '#0891B2', '#3CDBBF', '#059669', '#DC2626', '#D97706', '#7C3AED', '#B45309'];
     tbody.innerHTML = students.map((student, index) => {
       const color = colors[index % colors.length];
       const initials = window.initialsFor(student.full_name);

@@ -3,23 +3,29 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>My Tests — SAT Platform</title>
+  <title>My Tests — 4Prep</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/student-tests.css">
   <link rel="stylesheet" href="css/mobile.css">
+  <meta name="theme-color" content="#3CDBBF">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/brand/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/brand/favicon-16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/brand/4prep-logo-color-180.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="css/logo.css">
+  <script src="js/logo.js" defer></script>
+  <script src="js/theme.js" defer></script>
 </head>
 <body data-auth-role="student">
 
   <aside class="sidebar">
     <div class="sidebar-logo">
-      <div class="logo-wrap">
-        <div class="logo-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#0d2137" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-        </div>
-        <div class="logo-text">SAT Prep <small>Student portal</small></div>
-      </div>
+      <a class="brand-lockup" href="student-home.html" aria-label="4Prep student home">
+        <fourprep-logo size="40" variant="white"></fourprep-logo>
+        <span class="brand-copy">4Prep <small>Student portal</small></span>
+      </a>
     </div>
     <p class="nav-label">Menu</p>
     <a class="nav-item" href="student-home.html">
@@ -71,7 +77,7 @@
         <h1>Available tests</h1>
         <p>Click a test to start. Your timer begins immediately when you open a test.</p>
       </div>
-      <div id="testList"><div class="spinner"><div class="spin"></div></div></div>
+      <div id="testList"><div class="brand-loader"><fourprep-logo size="52" variant="color" theme-aware></fourprep-logo><span>Loading tests…</span></div></div>
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

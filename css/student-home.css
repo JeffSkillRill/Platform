@@ -5,11 +5,11 @@
       --surface:      #FFFFFF;
       --navy:         #0B1628;
       --navy-mid:     #152039;
-      --accent:       #3adbba;
+      --accent:       #3CDBBF;
       --accent-hover: #2bc4a4;
       --accent-light: #f0fdf9;
-      --accent-dim:   rgba(58,219,186,0.12);
-      --green:        #3adbba;
+      --accent-dim:   rgba(60,219,191,0.12);
+      --green:        #3CDBBF;
       --green-light:  #f0fdf9;
       --amber:        #D97706;
       --amber-light:  #FFFBEB;
@@ -100,7 +100,7 @@
 
     .nav-item.active {
       color: #fff;
-      background: rgba(58,219,186,0.15);
+      background: rgba(60,219,191,0.15);
     }
 
     .nav-item.active::before {
@@ -441,7 +441,7 @@
       background: var(--bg);
       min-height: 88px;
     }
-    .badge.earned { background: var(--accent-light); border-color: rgba(58,219,186,0.45); }
+    .badge.earned { background: var(--accent-light); border-color: rgba(60,219,191,0.45); }
     .badge-icon {
       width: 28px;
       height: 28px;
@@ -592,8 +592,8 @@
 
     .lb-row:last-child { border-bottom: none; }
     .lb-row:hover { background: var(--bg); }
-    .lb-row.me { background: rgba(58,219,186,0.08); }
-    .lb-row.me:hover { background: rgba(58,219,186,0.14); }
+    .lb-row.me { background: rgba(60,219,191,0.08); }
+    .lb-row.me:hover { background: rgba(60,219,191,0.14); }
 
     .lb-rank {
       font-family: 'Space Grotesk', sans-serif;

@@ -1,0 +1,163 @@
+:root {
+  --brand-primary: #3CDBBF;
+}
+
+fourprep-logo {
+  display: inline-flex;
+  width: var(--logo-size, 40px);
+  height: var(--logo-size, 40px);
+  flex: 0 0 var(--logo-size, 40px);
+  line-height: 0;
+  vertical-align: middle;
+}
+
+fourprep-logo > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.brand-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  color: inherit;
+  text-decoration: none;
+}
+
+.brand-lockup:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+.brand-copy {
+  display: flex;
+  flex-direction: column;
+  color: inherit;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.05;
+}
+
+.brand .brand-copy {
+  margin: 0;
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  font-size: 1rem;
+  letter-spacing: normal;
+}
+
+.brand-copy small {
+  margin-top: 0.2rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  line-height: 1.1;
+  text-transform: uppercase;
+  opacity: 0.58;
+}
+
+body[data-auth-role="student"] :is(.sidebar, .nav-sidebar) .brand-lockup,
+.mobile-topbar .brand-lockup,
+.satm-topbar .brand-lockup,
+.test-bar .brand-lockup,
+.topbar[style*="navy"] .brand-lockup {
+  color: #ffffff;
+}
+
+body[data-auth-role="admin"] :is(.sidebar, .nav-sidebar) .brand-lockup {
+  color: var(--navy, #0d2137);
+}
+
+.sidebar-logo .brand-lockup {
+  min-height: 40px;
+}
+
+.test-bar > .brand-lockup,
+.topbar > .brand-lockup {
+  margin-right: 0.15rem;
+}
+
+.satm-brand {
+  margin-right: 0.1rem;
+}
+
+.brand-loader {
+  display: flex;
+  min-height: 160px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+  color: var(--text-faint, var(--faint, #8ab5ac));
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.brand-loader fourprep-logo {
+  animation: brand-pulse 1.25s ease-in-out infinite;
+}
+
+.theme-toggle {
+  width: calc(100% - 2rem);
+  min-height: 36px;
+  margin: auto 1rem 0.65rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.12);
+  color: inherit;
+  cursor: pointer;
+  font: 700 0.72rem 'Inter', sans-serif;
+}
+
+body[data-auth-role="student"] .theme-toggle { color: #ffffff; }
+body[data-auth-role="admin"] .theme-toggle { color: var(--navy, #0d2137); }
+
+:is(.sidebar, .nav-sidebar):has(.theme-toggle) :is(.sidebar-bottom, .student) {
+  margin-top: 0;
+}
+
+.sidebar-bottom + .theme-toggle,
+.student + .theme-toggle {
+  margin-top: 0.65rem;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #07111f;
+  --paper: #07111f;
+  --surface: #102136;
+  --text: #f2f7fb;
+  --text-dark: #f2f7fb;
+  --text-muted: #a7bab4;
+  --muted: #a7bab4;
+  --text-faint: #718996;
+  --faint: #718996;
+  --border: #263b4d;
+  --teal-light: #10332f;
+  --teal-mid: #1c6259;
+  --accent-light: #10332f;
+  --green-light: #102e27;
+  --amber-light: #332811;
+  --red-light: #35191d;
+}
+
+html[data-theme="dark"] :is(.card, .panel, .table-card, .modal-box) {
+  color: var(--text);
+}
+
+@keyframes brand-pulse {
+  0%, 100% { opacity: 0.55; transform: scale(0.94); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-loader fourprep-logo { animation: none; }
+}

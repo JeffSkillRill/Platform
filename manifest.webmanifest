@@ -1,0 +1,30 @@
+{
+  "name": "4Prep SAT Platform",
+  "short_name": "4Prep",
+  "description": "Digital SAT practice, testing, and progress tracking.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3CDBBF",
+  "icons": [
+    {
+      "src": "assets/brand/4prep-logo-color-128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/brand/4prep-logo-color-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/brand/4prep-logo-color-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

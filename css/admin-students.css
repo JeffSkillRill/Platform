@@ -1,6 +1,6 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --teal:        #3adbba;
+      --teal:        #3CDBBF;
       --teal-dark:   #2bc4a4;
       --teal-darker: #1fa88c;
       --teal-light:  #e8faf6;
@@ -110,7 +110,7 @@
     .field:last-of-type { margin-bottom:0; }
     .field label { display:block; font-size:0.8rem; font-weight:600; color:var(--text); margin-bottom:0.4rem; }
     .field input { width:100%; background:var(--teal-light); border:1.5px solid var(--teal-mid); border-radius:9px; padding:0.65rem 0.85rem; font-size:0.9rem; font-family:'Inter',sans-serif; color:var(--text); outline:none; transition:border-color 0.12s; }
-    .field input:focus { border-color:var(--teal); box-shadow:0 0 0 3px rgba(58,219,186,0.15); }
+    .field input:focus { border-color:var(--teal); box-shadow:0 0 0 3px rgba(60,219,191,0.15); }
     .field input::placeholder { color:#9ecec5; }
     .field-hint { font-size:0.75rem; color:var(--text-muted); margin-top:0.35rem; }
 

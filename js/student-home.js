@@ -278,7 +278,7 @@
     const myIndex = rows.findIndex((row) => row.student_id === currentProfile.id);
     if (myIndex >= 5) visibleRows = [...rows.slice(0, 4), rows[myIndex]];
 
-    const colors = ['#6D28D9', '#0891B2', '#3adbba', '#059669', '#DC2626', '#D97706'];
+    const colors = ['#6D28D9', '#0891B2', '#3CDBBF', '#059669', '#DC2626', '#D97706'];
     preview.innerHTML = visibleRows.map((row) => {
       const rank = rows.indexOf(row) + 1;
       const user = profiles.find((item) => item.id === row.student_id) || {};

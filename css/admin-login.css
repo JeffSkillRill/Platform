@@ -1,7 +1,7 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --teal:         #3adbba;
+      --teal:         #3CDBBF;
       --teal-dark:    #2bc4a4;
       --teal-darker:  #1fa88c;
       --teal-light:   #e8faf6;
@@ -10,7 +10,7 @@
       --text-dark:    #0d2137;
       --text-muted:   #4a7c6f;
       --white:        #ffffff;
-      --border:       rgba(58,219,186,0.25);
+      --border:       rgba(60,219,191,0.25);
       --error:        #e05252;
     }
 
@@ -159,7 +159,7 @@
     input:focus {
       border-color: var(--teal);
       background: #fff;
-      box-shadow: 0 0 0 3px rgba(58,219,186,0.2);
+      box-shadow: 0 0 0 3px rgba(60,219,191,0.2);
     }
 
     input.error {

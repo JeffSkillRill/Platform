@@ -9,22 +9,24 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/admin-dashboard.css">
   <link rel="stylesheet" href="css/mobile.css">
+  <meta name="theme-color" content="#3CDBBF">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/brand/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/brand/favicon-16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/brand/4prep-logo-color-180.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="css/logo.css">
+  <script src="js/logo.js" defer></script>
+  <script src="js/theme.js" defer></script>
 </head>
 <body data-auth-role="admin">
 
   <!-- Sidebar -->
   <aside class="sidebar">
     <div class="sidebar-logo">
-      <div class="logo-wrap">
-        <div class="logo-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#3adbba" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-            <path d="M2 17l10 5 10-5"/>
-            <path d="M2 12l10 5 10-5"/>
-          </svg>
-        </div>
-        <div class="logo-text">SAT Prep <small>Admin panel</small></div>
-      </div>
+      <a class="brand-lockup" href="admin-dashboard.html" aria-label="4Prep admin dashboard">
+        <fourprep-logo size="40" variant="white"></fourprep-logo>
+        <span class="brand-copy">4Prep <small>Admin panel</small></span>
+      </a>
     </div>
 
     <p class="nav-label">Main</p>
@@ -41,7 +43,7 @@
     </a>
 
     <a class="nav-item" href="admin-classes.html">
-      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.4-1.9M17 20H7m10 0v-2a5 5 0 00-10 0v2m8-13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-nlinejoin="round" d="M17 20h5v-2a3 3 0 00-5.4-1.9M17 20H7m10 0v-2a5 5 0 00-10 0v2m8-13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
       Classes
     </a>
 

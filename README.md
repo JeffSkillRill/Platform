@@ -45,6 +45,17 @@ python3 -m http.server 5173
 
 Then open `http://localhost:5173`.
 
+## 4Prep Brand
+
+Pages load the shared `fourprep-logo` web component from `js/logo.js` and `css/logo.css`:
+
+```html
+<fourprep-logo size="40" variant="color"></fourprep-logo>
+<fourprep-logo size="40" variant="white"></fourprep-logo>
+```
+
+Use `theme-aware` on logos that sit on a theme-changing surface. It resolves to the color mark in light mode and the white mark in dark mode. UI and metadata must reference the optimized files in `assets/brand/`, never the full-size source files in `logo/`.
+
 ## Page Map
 
 - Public homepage: `index.html`

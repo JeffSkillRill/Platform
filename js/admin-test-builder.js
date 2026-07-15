@@ -561,12 +561,12 @@
         const count = moduleQuestions[mod.key].length;
         const pct   = Math.min((count / mod.target) * 100, 100);
         const done  = count >= mod.target;
-        const color = done ? '#3adbba' : count > 0 ? '#fbbf24' : 'rgba(255,255,255,0.1)';
+        const color = done ? '#3CDBBF' : count > 0 ? '#fbbf24' : 'rgba(255,255,255,0.1)';
         return `
           <div>
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
               <span style="font-size:0.58rem;font-weight:600;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:0.06em;">${mod.label}</span>
-              <span style="font-size:0.6rem;font-weight:700;color:${done?'#3adbba':'rgba(255,255,255,0.3)'};">${count}/${mod.target}</span>
+              <span style="font-size:0.6rem;font-weight:700;color:${done?'#3CDBBF':'rgba(255,255,255,0.3)'};">${count}/${mod.target}</span>
             </div>
             <div style="height:4px;background:rgba(255,255,255,0.08);border-radius:99px;overflow:hidden;">
               <div style="height:100%;width:${pct}%;background:${color};border-radius:99px;transition:width 0.3s;"></div>

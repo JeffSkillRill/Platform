@@ -9,20 +9,24 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/admin-students.css">
   <link rel="stylesheet" href="css/mobile.css">
+  <meta name="theme-color" content="#3CDBBF">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/brand/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/brand/favicon-16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/brand/4prep-logo-color-180.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="css/logo.css">
+  <script src="js/logo.js" defer></script>
+  <script src="js/theme.js" defer></script>
 </head>
 <body data-auth-role="admin">
 
   <!-- Sidebar -->
   <aside class="sidebar">
     <div class="sidebar-logo">
-      <div class="logo-wrap">
-        <div class="logo-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#3adbba" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2L2 7l10 5 10-5-10-5"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
-          </svg>
-        </div>
-        <div class="logo-text">SAT Prep <small>Admin panel</small></div>
-      </div>
+      <a class="brand-lockup" href="admin-dashboard.html" aria-label="4Prep admin dashboard">
+        <fourprep-logo size="40" variant="white"></fourprep-logo>
+        <span class="brand-copy">4Prep <small>Admin panel</small></span>
+      </a>
     </div>
     <p class="nav-label">Main</p>
     <a class="nav-item" href="admin-dashboard.html">
@@ -158,7 +162,7 @@
       <div id="addSuccess" style="display:none;">
         <div style="text-align:center;margin-bottom:1.25rem;">
           <div style="width:48px;height:48px;background:var(--teal-light);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 0.75rem;">
-            <svg width="22" height="22" fill="none" stroke="#3adbba" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            <svg width="22" height="22" fill="none" stroke="#3CDBBF" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
           </div>
           <div style="font-family:'Space Grotesk',sans-serif;font-size:1rem;font-weight:700;color:var(--text);">Account created!</div>
           <div style="font-size:0.82rem;color:var(--text-muted);margin-top:0.25rem;">Share these credentials with the student.</div>

@@ -7,7 +7,7 @@
     :root {
       --navy: #0b1628;
       --navy-soft: #13233a;
-      --teal: #3adbba;
+      --teal: #3CDBBF;
       --teal-dark: #20b99b;
       --mint: #e8faf6;
       --green: #059669;
@@ -344,8 +344,8 @@
     }
 
     footer {
-      background: #ffffff;
-      border-top: 1px solid var(--border);
+      background: var(--navy);
+      border-top: 1px solid rgba(255,255,255,0.1);
     }
 
     .footer-inner {
@@ -356,7 +356,7 @@
       align-items: center;
       justify-content: space-between;
       gap: 1rem;
-      color: var(--muted);
+      color: rgba(255,255,255,0.72);
       font-size: 0.82rem;
     }
 
@@ -369,7 +369,7 @@
     .footer-links a {
       text-decoration: none;
       font-weight: 700;
-      color: var(--text);
+      color: #ffffff;
     }
 
     .footer-links a:hover {

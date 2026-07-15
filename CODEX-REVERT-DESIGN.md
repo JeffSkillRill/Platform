@@ -49,7 +49,7 @@ Then delete redesign-only artifacts:
 
 The untracked feature pages currently use the removed redesign system. Rewrite their markup/CSS to match the original design exactly:
 - `student-classes.html`, `student-vocabulary.html`, `student-question-bank.html`, `student-practice.html` (if it uses base.css), `admin-classes.html`, `admin-vocabulary.html`, `admin-question-bank.html` + their CSS files.
-- Method: take an original page as the template — copy its sidebar, topbar, fonts (Inter + Space Grotesk), CSS variables (teal accent `#3adbba`, teal-light backgrounds, existing card/table/button/modal/toast styles from the restored per-page CSS files), then port the feature content into those patterns. Each feature page''s CSS should look like a sibling of the original per-page stylesheets (define the same `:root` variables the originals use), NOT like the redesign.
+- Method: take an original page as the template — copy its sidebar, topbar, fonts (Inter + Space Grotesk), CSS variables (4Prep teal accent `#3CDBBF`, teal-light backgrounds, existing card/table/button/modal/toast styles from the restored per-page CSS files), then port the feature content into those patterns. Each feature page''s CSS should look like a sibling of the original per-page stylesheets (define the same `:root` variables the originals use), NOT like the redesign.
 - Keep ALL feature functionality identical: vocabulary lists/flashcards/quiz, question bank filters/sessions/server-graded checks, classes membership and class-assigned tests.
 
 ## Step 5 — Verify

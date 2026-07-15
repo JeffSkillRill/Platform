@@ -9,22 +9,24 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/admin-test-builder.css">
   <link rel="stylesheet" href="css/mobile.css">
+  <meta name="theme-color" content="#3CDBBF">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/brand/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/brand/favicon-16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/brand/4prep-logo-color-180.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="css/logo.css">
+  <script src="js/logo.js" defer></script>
+  <script src="js/theme.js" defer></script>
 </head>
 <body data-auth-role="admin">
 
   <!-- Nav sidebar -->
   <aside class="nav-sidebar">
     <div class="sidebar-logo">
-      <div class="logo-wrap">
-        <div class="logo-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#3adbba" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2L2 7l10 5 10-5-10-5"/>
-            <path d="M2 17l10 5 10-5"/>
-            <path d="M2 12l10 5 10-5"/>
-          </svg>
-        </div>
-        <div class="logo-text">SAT Prep <small>Admin panel</small></div>
-      </div>
+      <a class="brand-lockup" href="admin-dashboard.html" aria-label="4Prep admin dashboard">
+        <fourprep-logo size="40" variant="white"></fourprep-logo>
+        <span class="brand-copy">4Prep <small>Admin panel</small></span>
+      </a>
     </div>
 
     <p class="nav-label">Main</p>
@@ -168,7 +170,7 @@
         <!-- Empty state -->
         <div id="emptyState" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;padding:2rem;">
           <div style="width:64px;height:64px;background:var(--teal-light);border-radius:16px;display:flex;align-items:center;justify-content:center;margin-bottom:1.25rem;">
-            <svg width="30" height="30" fill="none" stroke="#3adbba" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <svg width="30" height="30" fill="none" stroke="#3CDBBF" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
           </div>
           <div style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:0.5rem;">No questions yet</div>
           <div style="font-size:0.85rem;color:var(--text-muted);max-width:280px;line-height:1.6;margin-bottom:1.5rem;">Click "Add question" to start building your test. Each question has a stem, four choices, and a correct answer.</div>

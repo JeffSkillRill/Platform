@@ -18,6 +18,16 @@
     return b;
   }
 
+  function makeLogoLink() {
+    const link = document.createElement('a');
+    const isAdmin = document.body.dataset.authRole === 'admin';
+    link.className = 'brand-lockup satm-brand';
+    link.href = isAdmin ? 'admin-dashboard.html' : 'student-home.html';
+    link.setAttribute('aria-label', isAdmin ? '4Prep admin dashboard' : '4Prep student home');
+    link.appendChild(window.Logo({ size: 32, variant: 'white' }));
+    return link;
+  }
+
   // Overlay (click to close)
   const overlay = document.createElement('div');
   overlay.className = 'satm-overlay';
@@ -32,10 +42,11 @@
     const bar = document.createElement('div');
     bar.className = 'satm-topbar';
     bar.appendChild(makeBurger());
+    bar.appendChild(makeLogoLink());
     const title = document.createElement('span');
     title.className = 'satm-title';
     const t = document.querySelector('.topbar-title, .page-head h1');
-    title.textContent = (t && t.textContent.trim()) || 'SAT Prep';
+    title.textContent = (t && t.textContent.trim()) || '4Prep';
     bar.appendChild(title);
     document.body.insertBefore(bar, document.body.firstChild);
   }
