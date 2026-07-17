@@ -15,6 +15,8 @@
   <link rel="apple-touch-icon" sizes="180x180" href="assets/brand/4prep-logo-color-180.png">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="css/logo.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <script src="js/animations.js"></script>
   <script src="js/logo.js" defer></script>
   <script src="js/theme.js" defer></script>
 </head>
@@ -168,23 +170,23 @@
 
         <!-- Stats grid -->
         <div class="stats-panel">
-          <div class="stat-card fade-up">
+          <div class="stat-card fade-up" data-skeleton="stat" data-skeleton-mode="overlay">
             <span class="stat-card-label">Tests completed</span>
             <span class="stat-card-value" id="testsCompleted">—</span>
             <span class="stat-card-sub" id="testsCompletedSub">Loading available tests</span>
           </div>
-          <div class="stat-card fade-up">
+          <div class="stat-card fade-up" data-skeleton="stat" data-skeleton-mode="overlay">
             <span class="stat-card-label">Average score</span>
             <span class="stat-card-value green" id="avgScore">—</span>
             <span class="stat-card-sub">across all attempts</span>
           </div>
-          <div class="stat-card fade-up">
+          <div class="stat-card fade-up" data-skeleton="stat" data-skeleton-mode="overlay">
             <span class="stat-card-label">Score improvement</span>
             <span class="stat-card-value green" id="improvement">—</span>
             <span class="stat-card-sub">since first test</span>
             <div class="trend-chart" id="trendChart"></div>
           </div>
-          <div class="stat-card fade-up">
+          <div class="stat-card fade-up" data-skeleton="stat" data-skeleton-mode="overlay">
             <span class="stat-card-label">Leaderboard rank</span>
             <span class="stat-card-value amber" id="lbRank">—</span>
             <span class="stat-card-sub" id="lbRankSub">Loading class ranking</span>
@@ -210,7 +212,7 @@
             <a class="section-link" href="student-tests.html">View all →</a>
           </div>
 
-          <div class="test-list" id="dashboardTestList">
+          <div class="test-list" id="dashboardTestList" data-skeleton="list-item" data-skeleton-count="3">
             <div class="test-item" style="cursor:default;">
               <span class="test-status-dot new"></span>
               <div class="test-info">
@@ -234,7 +236,7 @@
               <span style="font-size:0.75rem;color:var(--text-muted);">Best score</span>
             </div>
 
-            <div id="leaderboardPreview">
+            <div id="leaderboardPreview" data-skeleton="list-item" data-skeleton-count="4">
               <div class="lb-row">
                 <span class="lb-rank">—</span>
                 <div class="lb-avatar" style="background:var(--accent);">ST</div>
@@ -259,7 +261,7 @@
       <input id="targetScoreInput" type="number" min="400" max="1600" step="10" placeholder="1450">
       <div class="goal-actions">
         <button type="button" class="goal-cancel" onclick="closeGoalModal()">Cancel</button>
-        <button type="button" class="goal-save" onclick="saveTargetScore()">Save goal</button>
+        <button type="button" class="goal-save" id="saveGoalBtn" onclick="saveTargetScore()">Save goal</button>
       </div>
     </div>
   </div>

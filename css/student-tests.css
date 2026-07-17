@@ -87,5 +87,4 @@
     .empty-state p { font-size:0.88rem; line-height:1.6; }
 
     .spinner { display:flex; justify-content:center; padding:3rem; }
-    .spin { width:24px; height:24px; border:2.5px solid var(--teal-mid); border-top-color:var(--teal); border-radius:50%; animation:spin 0.7s linear infinite; }
-    @keyframes spin { to{transform:rotate(360deg)} }
+    .spin { width:24px; height:24px; border:2.5px solid var(--teal-mid); border-top-color:var(--teal); border-radius:50%; animation:sat-spin 0.7s linear infinite; }

@@ -77,27 +77,32 @@
       });
     });
     app.querySelectorAll('[data-play-topic]').forEach((button) => {
-      button.addEventListener('click', () => startSession(button.dataset.playTopic));
+      button.addEventListener('click', () => startSession(button.dataset.playTopic, button));
     });
-    document.getElementById('startSessionBtn').addEventListener('click', () => startSession());
+    document.getElementById('startSessionBtn').addEventListener('click', (event) => startSession(null, event.currentTarget));
   }
 
-  async function startSession(topic = null) {
+  async function startSession(topic = null, button = null) {
     const pool = filteredQuestions(topic).sort(() => Math.random() - 0.5).slice(0, 10);
     if (!pool.length) return alert('No questions match these filters.');
-    const inserted = await window.satInsert('practice_sessions', {
-      student_id: context.profile.id,
-      filters: { difficulties: Array.from(selectedDifficulties), topics: Array.from(selectedTopics), topic },
-      question_ids: pool.map((q) => q.id),
-    });
-    session = inserted[0];
-    sessionQuestions = pool;
-    currentIndex = 0;
-    selected = null;
-    selectedText = '';
-    feedback = null;
-    questionStartedAt = Date.now();
-    renderQuestion();
+    window.satSetButtonLoading(button, true, 'Starting session');
+    try {
+      const inserted = await window.satInsert('practice_sessions', {
+        student_id: context.profile.id,
+        filters: { difficulties: Array.from(selectedDifficulties), topics: Array.from(selectedTopics), topic },
+        question_ids: pool.map((q) => q.id),
+      });
+      session = inserted[0];
+      sessionQuestions = pool;
+      currentIndex = 0;
+      selected = null;
+      selectedText = '';
+      feedback = null;
+      questionStartedAt = Date.now();
+      renderQuestion();
+    } finally {
+      window.satSetButtonLoading(button, false);
+    }
   }
 
   function currentQuestion() {
@@ -133,15 +138,21 @@
     if (!isSpr && selected === null) return alert('Choose an answer first.');
     if (isSpr && !selectedText.trim()) return alert('Enter an answer first.');
     const elapsed = Math.floor((Date.now() - questionStartedAt) / 1000);
-    const result = await window.satRpc('check_practice_answer', {
-      p_session_id: session.id,
-      p_question_id: q.id,
-      p_chosen: isSpr ? null : selected,
-      p_chosen_text: isSpr ? selectedText : null,
-      p_time_spent: elapsed,
-    });
-    feedback = Array.isArray(result) ? result[0] : result;
-    renderQuestion();
+    const button = document.getElementById('checkBankBtn');
+    window.satSetButtonLoading(button, true, 'Checking answer');
+    try {
+      const result = await window.satRpc('check_practice_answer', {
+        p_session_id: session.id,
+        p_question_id: q.id,
+        p_chosen: isSpr ? null : selected,
+        p_chosen_text: isSpr ? selectedText : null,
+        p_time_spent: elapsed,
+      });
+      feedback = Array.isArray(result) ? result[0] : result;
+      renderQuestion();
+    } finally {
+      window.satSetButtonLoading(button, false);
+    }
   }
 
   function nextQuestion() {

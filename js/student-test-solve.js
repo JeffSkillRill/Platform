@@ -366,11 +366,11 @@
         ? 'Go to break'
         : 'Next module';
 
-    document.getElementById('endModal').classList.add('open');
+    window.satAnimations.openModal('#endModal');
   }
 
   function closeEndModal() {
-    document.getElementById('endModal').classList.remove('open');
+    window.satAnimations.closeModal('#endModal');
   }
 
   function nextModuleLabel() {
@@ -451,8 +451,10 @@
     }).join('');
 
     const totalAnswered = allQuestions.filter(isAnswered).length;
-    document.getElementById('progressFill').style.width =
-      allQuestions.length ? `${(totalAnswered / allQuestions.length) * 100}%` : '0%';
+    document.getElementById('progressFill').style.setProperty(
+      '--sat-progress',
+      allQuestions.length ? String(totalAnswered / allQuestions.length) : '0'
+    );
   }
 
   function sprPreviewHtml(value) {
@@ -611,6 +613,7 @@
     currentQIdx = index;
     document.getElementById('qGridPanel')?.classList.remove('mobile-open');
     renderQuestion();
+    window.satAnimations.animateSwap('#questionArea');
     saveProgress(true);
   }
 
@@ -626,6 +629,9 @@
       finalAnswers[q.id] = answers[q.id] !== undefined ? answers[q.id] : null;
     });
 
+    const submitButton = document.getElementById('endModalConfirmBtn');
+    const loader = window.satAnimations.showLoader('Submitting and grading…', { delay: 150 });
+    window.satSetButtonLoading(submitButton, true, 'Submitting test');
     try {
       const submission = await window.satRpc('submit_attempt', {
         p_attempt_id: attemptId,
@@ -640,6 +646,9 @@
       console.error(err);
       isSubmitting = false;
       alert('Submission failed. Check your connection and try again.');
+    } finally {
+      loader.hide();
+      window.satSetButtonLoading(submitButton, false);
     }
   }
 
@@ -699,11 +708,11 @@
 
   function openReference() {
     if (activeModuleConfig().section !== 'math') return;
-    document.getElementById('referenceModal')?.classList.add('open');
+    window.satAnimations.openModal('#referenceModal');
   }
 
   function closeReference() {
-    document.getElementById('referenceModal')?.classList.remove('open');
+    window.satAnimations.closeModal('#referenceModal');
   }
 
   function cycleZoom() {

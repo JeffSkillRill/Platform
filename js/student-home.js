@@ -338,17 +338,21 @@
           <div class="lb-name">Leaderboard unavailable<small>Check Supabase connection</small></div>
           <span class="lb-score">—</span>
         </div>`;
+      ['testsCompleted', 'avgScore', 'improvement', 'lbRank'].forEach((id) => window.satSetText(id, '—'));
+      window.satSetText('testsCompletedSub', 'Dashboard data unavailable');
+      window.satSetText('lbRankSub', 'Dashboard data unavailable');
+      document.querySelectorAll('[data-skeleton="stat"]').forEach((card) => window.satReveal(card));
     }
   }
 
   function openGoalModal() {
     const input = document.getElementById('targetScoreInput');
     if (input) input.value = currentContext?.profile?.target_score || '';
-    document.getElementById('goalModal')?.classList.add('open');
+    window.satAnimations.openModal('#goalModal');
   }
 
   function closeGoalModal() {
-    document.getElementById('goalModal')?.classList.remove('open');
+    window.satAnimations.closeModal('#goalModal');
   }
 
   async function saveTargetScore() {
@@ -358,6 +362,8 @@
       alert('Enter a target score between 400 and 1600.');
       return;
     }
+    const button = document.getElementById('saveGoalBtn');
+    window.satSetButtonLoading(button, true, 'Saving goal');
     try {
       const updated = await window.satRpc('set_target_score', { p_target_score: value });
       const profile = Array.isArray(updated) ? updated[0] : updated;
@@ -367,6 +373,8 @@
     } catch (err) {
       console.error(err);
       alert('Could not save your goal. Run migration 002 first.');
+    } finally {
+      window.satSetButtonLoading(button, false);
     }
   }
 

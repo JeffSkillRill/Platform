@@ -61,6 +61,11 @@
     document.body.classList.toggle('satm-nav-open');
   }
 
+  const mobileViewport = window.matchMedia('(max-width: 768px)');
+  mobileViewport.addEventListener('change', function (event) {
+    if (!event.matches) close();
+  });
+
   // Close the drawer when a nav link is tapped or Escape is pressed.
   sidebar.addEventListener('click', function (e) {
     if (e.target.closest('a')) close();

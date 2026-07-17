@@ -124,11 +124,11 @@
     document.getElementById('listTitle').value = list?.title || '';
     document.getElementById('listDescription').value = list?.description || '';
     document.getElementById('listClass').value = list?.class_id || '';
-    document.getElementById('listModal').classList.add('open');
+    window.satAnimations.openModal('#listModal');
   }
 
   function closeListModal() {
-    document.getElementById('listModal').classList.remove('open');
+    window.satAnimations.closeModal('#listModal');
   }
 
   function openWordModal(word = null) {
@@ -142,15 +142,16 @@
     document.getElementById('adminSynonymsInput').value = window.parseJson(word?.synonyms, []).join(', ');
     document.getElementById('adminAntonymsInput').value = window.parseJson(word?.antonyms, []).join(', ');
     document.getElementById('adminExampleInput').value = word?.example || '';
-    document.getElementById('adminWordModal').classList.add('open');
+    window.satAnimations.openModal('#adminWordModal');
   }
 
   function closeWordModal() {
-    document.getElementById('adminWordModal').classList.remove('open');
+    window.satAnimations.closeModal('#adminWordModal');
   }
 
   async function saveList(event) {
     event.preventDefault();
+    const button = document.getElementById('saveListBtn');
     const id = document.getElementById('listId').value;
     const payload = {
       title: document.getElementById('listTitle').value.trim(),
@@ -160,17 +161,23 @@
       class_id: document.getElementById('listClass').value || null,
     };
     if (!payload.title) return;
-    if (id) await window.satPatch(`vocab_lists?id=eq.${encodeURIComponent(id)}`, payload);
-    else {
-      const created = await window.satInsert('vocab_lists', payload);
-      activeListId = created[0]?.id || activeListId;
+    window.satSetButtonLoading(button, true, 'Saving list');
+    try {
+      if (id) await window.satPatch(`vocab_lists?id=eq.${encodeURIComponent(id)}`, payload);
+      else {
+        const created = await window.satInsert('vocab_lists', payload);
+        activeListId = created[0]?.id || activeListId;
+      }
+      closeListModal();
+      await load();
+    } finally {
+      window.satSetButtonLoading(button, false);
     }
-    closeListModal();
-    await load();
   }
 
   async function saveWord(event) {
     event.preventDefault();
+    const button = document.getElementById('saveAdminWordBtn');
     const id = document.getElementById('adminWordId').value;
     const payload = {
       list_id: document.getElementById('adminWordListId').value,
@@ -181,10 +188,15 @@
       example: document.getElementById('adminExampleInput').value.trim() || null,
     };
     if (!payload.list_id || !payload.word || !payload.definition) return;
-    if (id) await window.satPatch(`vocab_words?id=eq.${encodeURIComponent(id)}`, payload);
-    else await window.satInsert('vocab_words', payload);
-    closeWordModal();
-    await load();
+    window.satSetButtonLoading(button, true, 'Saving word');
+    try {
+      if (id) await window.satPatch(`vocab_words?id=eq.${encodeURIComponent(id)}`, payload);
+      else await window.satInsert('vocab_words', payload);
+      closeWordModal();
+      await load();
+    } finally {
+      window.satSetButtonLoading(button, false);
+    }
   }
 
   async function deleteList(listId) {

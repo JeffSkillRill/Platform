@@ -152,12 +152,3 @@ html[data-theme="dark"] {
 html[data-theme="dark"] :is(.card, .panel, .table-card, .modal-box) {
   color: var(--text);
 }
-
-@keyframes brand-pulse {
-  0%, 100% { opacity: 0.55; transform: scale(0.94); }
-  50% { opacity: 1; transform: scale(1); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .brand-loader fourprep-logo { animation: none; }
-}

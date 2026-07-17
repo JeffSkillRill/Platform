@@ -94,8 +94,7 @@
     .empty-row td { text-align:center; padding:3rem; color:var(--text-faint); font-size:0.85rem; }
 
     /* Loading spinner */
-    .spinner { display:inline-block; width:18px; height:18px; border:2px solid var(--teal-mid); border-top-color:var(--teal); border-radius:50%; animation:spin 0.7s linear infinite; }
-    @keyframes spin { to { transform:rotate(360deg); } }
+    .spinner { display:inline-block; width:18px; height:18px; border:2px solid var(--teal-mid); border-top-color:var(--teal); border-radius:50%; animation:sat-spin 0.7s linear infinite; }
 
     /* Modal */
     .modal-overlay { display:none; position:fixed; inset:0; background:rgba(13,33,55,0.5); z-index:200; align-items:center; justify-content:center; padding:1rem; }

@@ -69,7 +69,7 @@
   }
 
   function openAddModal() {
-    document.getElementById('addModal').classList.add('open');
+    window.satAnimations.openModal('#addModal');
     document.getElementById('addForm').style.display = 'block';
     document.getElementById('addSuccess').style.display = 'none';
     document.getElementById('addError').classList.remove('visible');
@@ -80,7 +80,7 @@
   }
 
   function closeAddModal() {
-    document.getElementById('addModal').classList.remove('open');
+    window.satAnimations.closeModal('#addModal');
   }
 
   function addAnother() {
@@ -97,8 +97,6 @@
     const el = document.getElementById('addError');
     el.textContent = message;
     el.classList.add('visible');
-    document.getElementById('addSubmitBtn').disabled = false;
-    document.getElementById('addSubmitBtn').textContent = 'Create account';
   }
 
   async function createStudentAuthUser(fullName, username, password) {
@@ -137,8 +135,7 @@
     if (!password) { showModalError('Password is required.'); return; }
     if (password.length < 6) { showModalError('Password must be at least 6 characters.'); return; }
 
-    btn.disabled = true;
-    btn.textContent = 'Creating...';
+    window.satSetButtonLoading(btn, true, 'Creating account');
 
     try {
       await createStudentAuthUser(name, username, password);
@@ -151,24 +148,25 @@
       console.error(err);
       showModalError(err.message || 'Could not create the student account.');
     } finally {
-      btn.disabled = false;
-      btn.textContent = 'Create account';
+      window.satSetButtonLoading(btn, false);
     }
   }
 
   function openDeleteModal(id, name) {
     deleteTargetId = id;
     window.satSetText('deleteStudentName', name);
-    document.getElementById('deleteModal').classList.add('open');
+    window.satAnimations.openModal('#deleteModal');
   }
 
   function closeDeleteModal() {
-    document.getElementById('deleteModal').classList.remove('open');
+    window.satAnimations.closeModal('#deleteModal');
     deleteTargetId = null;
   }
 
   async function confirmDelete() {
     if (!deleteTargetId) return;
+    const button = document.getElementById('confirmDeleteBtn');
+    window.satSetButtonLoading(button, true, 'Deactivating student');
     try {
       await window.satPatch(`profiles?id=eq.${encodeURIComponent(deleteTargetId)}`, { is_active: false });
       closeDeleteModal();
@@ -177,14 +175,15 @@
     } catch (err) {
       console.error(err);
       showToast('Failed to deactivate student.');
+    } finally {
+      window.satSetButtonLoading(button, false);
     }
   }
 
   function showToast(message) {
     const toast = document.getElementById('toast');
     window.satSetText('toastMsg', message);
-    toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 2800);
+    window.satAnimations.showToast(toast);
   }
 
   async function init() {

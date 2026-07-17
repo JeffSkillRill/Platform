@@ -89,7 +89,7 @@
       padding:0.4rem 1rem; border-radius:99px; border:1.5px solid var(--border);
       background:var(--surface); font-family:'Inter',sans-serif;
       font-size:0.78rem; font-weight:600; color:var(--text-muted);
-      cursor:pointer; transition:all 0.12s;
+      cursor:pointer; transition:transform 0.12s;
     }
     .filter-btn:hover   { border-color:var(--teal); color:var(--teal-darker); }
     .filter-btn.active  { background:var(--teal); border-color:var(--teal); color:var(--navy); }

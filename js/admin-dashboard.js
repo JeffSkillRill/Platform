@@ -216,7 +216,7 @@
     return payload;
   }
 
-  async function addStudent() {
+  async function addStudent(button) {
     const name = document.getElementById('newStudentName').value.trim();
     const username = document.getElementById('newStudentUser').value.trim().toLowerCase().replace(/\s+/g, '');
     const password = document.getElementById('newStudentPass').value.trim();
@@ -224,6 +224,7 @@
       alert('Please enter a name, username, and a password with at least 6 characters.');
       return;
     }
+    window.satSetButtonLoading(button, true, 'Creating student');
     try {
       await createStudentAuthUser(name, username, password);
       closeModal('addStudent');
@@ -232,15 +233,18 @@
     } catch (err) {
       console.error(err);
       alert(err.message || 'Could not create student.');
+    } finally {
+      window.satSetButtonLoading(button, false);
     }
   }
 
-  async function createTest() {
+  async function createTest(button) {
     const name = document.getElementById('newTestName').value.trim();
     if (!name) {
       alert('Please enter a test name.');
       return;
     }
+    window.satSetButtonLoading(button, true, 'Creating test');
     try {
       const [created] = await window.satInsert('tests', {
         name,
@@ -252,17 +256,19 @@
     } catch (err) {
       console.error(err);
       alert('Could not create the test.');
+    } finally {
+      window.satSetButtonLoading(button, false);
     }
   }
 
   function openModal(id) {
     const el = document.getElementById(`modal-${id}`);
-    if (el) el.style.display = 'flex';
+    if (el) window.satAnimations.openModal(el);
   }
 
   function closeModal(id) {
     const el = document.getElementById(`modal-${id}`);
-    if (el) el.style.display = 'none';
+    if (el) window.satAnimations.closeModal(el);
   }
 
   async function loadDashboard() {
@@ -294,6 +300,17 @@
       console.error(err);
       document.getElementById('pulseRow').innerHTML =
         '<div style="color:rgba(255,255,255,0.45);font-size:0.85rem;">Could not load dashboard data.</div>';
+      document.getElementById('studentTableBody').innerHTML =
+        '<tr><td colspan="5" style="color:var(--text-faint);padding:1rem;">Could not load students.</td></tr>';
+      document.getElementById('activityFeed').innerHTML =
+        '<div style="padding:1rem;color:var(--text-faint);">Could not load recent activity.</div>';
+      document.querySelectorAll('.stat-card').forEach((card) => {
+        const value = card.querySelector('.stat-value');
+        const sub = card.querySelector('.stat-sub');
+        if (value) value.textContent = '—';
+        if (sub) sub.textContent = 'Unavailable';
+      });
+      document.querySelectorAll('[data-skeleton="stat"]').forEach((card) => window.satReveal(card));
     }
   }
 

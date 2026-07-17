@@ -59,8 +59,7 @@
     }
     if (!valid) return;
 
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Signing in...';
+    window.satSetButtonLoading(submitBtn, true, 'Signing in');
 
     try {
       const client = window.satGetClient();
@@ -83,8 +82,7 @@
       try { await window.satGetClient().auth.signOut(); } catch (signOutErr) { console.error(signOutErr); }
       globalError.classList.add('visible');
     } finally {
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Sign in';
+      window.satSetButtonLoading(submitBtn, false);
     }
   });
 }());

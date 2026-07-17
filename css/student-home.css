@@ -344,7 +344,7 @@
       background: rgba(255,255,255,0.1);
       align-self: stretch;
     }
-    .ring-target { opacity: 0.9; transition: stroke-dashoffset 0.4s; }
+    .ring-target { opacity: 0.9; }
     .goal-btn {
       border: 1px solid rgba(255,255,255,0.14);
       background: rgba(255,255,255,0.08);
@@ -732,39 +732,4 @@
       .stats-panel { grid-template-columns: 1fr 1fr; }
       .lower-grid { grid-template-columns: 1fr; }
       .badge-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    }
-
-    /* ===================== ANIMATIONS ===================== */
-    @keyframes ring-fill {
-      from { stroke-dashoffset: var(--ring-start); }
-      to   { stroke-dashoffset: var(--ring-end); }
-    }
-
-    .ring-progress {
-      animation: ring-fill 1.2s cubic-bezier(0.4,0,0.2,1) forwards;
-      animation-delay: 0.3s;
-      stroke-dashoffset: var(--ring-start);
-    }
-
-    @keyframes fade-up {
-      from { opacity: 0; transform: translateY(10px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    .fade-up {
-      animation: fade-up 0.4s ease forwards;
-      opacity: 0;
-    }
-
-    .fade-up:nth-child(1) { animation-delay: 0.05s; }
-    .fade-up:nth-child(2) { animation-delay: 0.1s; }
-    .fade-up:nth-child(3) { animation-delay: 0.15s; }
-    .fade-up:nth-child(4) { animation-delay: 0.2s; }
-
-    @media (prefers-reduced-motion: reduce) {
-      .ring-progress, .fade-up {
-        animation: none;
-        opacity: 1;
-        stroke-dashoffset: var(--ring-end);
-      }
     }

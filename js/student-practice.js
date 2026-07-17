@@ -159,18 +159,24 @@
     if (isSpr && !selectedText.trim()) return alert('Enter an answer first.');
     if (!isSpr && selected === null) return alert('Choose an answer first.');
 
-    const result = await window.satRpc('check_practice_answer', {
-      p_question_id: q.question_id,
-      p_chosen: isSpr ? null : selected,
-      p_chosen_text: isSpr ? selectedText : null,
-    });
-    feedback = Array.isArray(result) ? result[0] : result;
-    practiceEvents.unshift({
-      question_id: q.question_id,
-      is_correct: Boolean(feedback?.is_correct),
-      answered_at: new Date().toISOString(),
-    });
-    render();
+    const button = document.getElementById('checkBtn');
+    window.satSetButtonLoading(button, true, 'Checking answer');
+    try {
+      const result = await window.satRpc('check_practice_answer', {
+        p_question_id: q.question_id,
+        p_chosen: isSpr ? null : selected,
+        p_chosen_text: isSpr ? selectedText : null,
+      });
+      feedback = Array.isArray(result) ? result[0] : result;
+      practiceEvents.unshift({
+        question_id: q.question_id,
+        is_correct: Boolean(feedback?.is_correct),
+        answered_at: new Date().toISOString(),
+      });
+      render();
+    } finally {
+      window.satSetButtonLoading(button, false);
+    }
   }
 
   async function load() {

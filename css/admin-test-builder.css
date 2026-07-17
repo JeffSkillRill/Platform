@@ -228,7 +228,7 @@
     .est-score {
       font-family: 'Space Grotesk', sans-serif;
       font-size: 2rem; font-weight: 700; color: var(--teal);
-      line-height: 1; transition: all 0.3s ease;
+      line-height: 1;
     }
 
     .est-max { font-size: 0.8rem; color: rgba(255,255,255,0.3); }

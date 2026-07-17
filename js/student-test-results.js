@@ -85,7 +85,11 @@
 
   function renderBreakdowns() {
     const panel = document.getElementById('breakdownPanel');
-    if (!panel || !reviewRows.length) return;
+    if (!panel) return;
+    if (!reviewRows.length) {
+      panel.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-faint);">No topic breakdown is available for this attempt.</div>';
+      return;
+    }
     const sections = [
       ['rw', 'Reading & Writing'],
       ['math', 'Math'],

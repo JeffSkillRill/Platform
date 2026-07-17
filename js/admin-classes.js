@@ -97,15 +97,16 @@
     document.getElementById('className').value = item?.name || '';
     document.getElementById('classDescription').value = item?.description || '';
     document.getElementById('classModalTitle').textContent = item ? 'Edit class' : 'New class';
-    document.getElementById('classModal').classList.add('open');
+    window.satAnimations.openModal('#classModal');
   }
 
   function closeClassModal() {
-    document.getElementById('classModal').classList.remove('open');
+    window.satAnimations.closeModal('#classModal');
   }
 
   async function saveClass(event) {
     event.preventDefault();
+    const button = document.getElementById('saveClassBtn');
     const id = document.getElementById('classId').value;
     const payload = {
       name: document.getElementById('className').value.trim(),
@@ -113,10 +114,15 @@
       teacher_id: context.profile.id,
     };
     if (!payload.name) return;
-    if (id) await window.satPatch(`classes?id=eq.${encodeURIComponent(id)}`, payload);
-    else await window.satInsert('classes', payload);
-    closeClassModal();
-    await load();
+    window.satSetButtonLoading(button, true, 'Saving class');
+    try {
+      if (id) await window.satPatch(`classes?id=eq.${encodeURIComponent(id)}`, payload);
+      else await window.satInsert('classes', payload);
+      closeClassModal();
+      await load();
+    } finally {
+      window.satSetButtonLoading(button, false);
+    }
   }
 
   async function addMember() {

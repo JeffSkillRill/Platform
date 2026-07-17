@@ -15,6 +15,8 @@
   <link rel="apple-touch-icon" sizes="180x180" href="assets/brand/4prep-logo-color-180.png">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="css/logo.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <script src="js/animations.js"></script>
   <script src="js/logo.js" defer></script>
   <script src="js/theme.js" defer></script>
 </head>
@@ -123,27 +125,27 @@
             <div class="legend-item"><span class="legend-dot" style="background:rgba(255,255,255,0.15);"></span>No test yet</div>
           </div>
         </div>
-        <div class="pulse-row" id="pulseRow"></div>
+        <div class="pulse-row" id="pulseRow" data-skeleton="list-item" data-skeleton-count="4"></div>
       </div>
 
       <!-- Stats -->
       <div class="stats-row">
-        <div class="stat-card fade-up">
+        <div class="stat-card fade-up" data-skeleton="stat" data-skeleton-mode="overlay">
           <div class="stat-label">Total students</div>
           <div class="stat-value teal">18</div>
           <div class="stat-sub">3 added this month</div>
         </div>
-        <div class="stat-card fade-up">
+        <div class="stat-card fade-up" data-skeleton="stat" data-skeleton-mode="overlay">
           <div class="stat-label">Tests published</div>
           <div class="stat-value teal">6</div>
           <div class="stat-sub">1 in draft</div>
         </div>
-        <div class="stat-card fade-up">
+        <div class="stat-card fade-up" data-skeleton="stat" data-skeleton-mode="overlay">
           <div class="stat-label">Class average</div>
           <div class="stat-value green">1248</div>
           <div class="stat-sub">↑ 42 pts this month</div>
         </div>
-        <div class="stat-card fade-up">
+        <div class="stat-card fade-up" data-skeleton="stat" data-skeleton-mode="overlay">
           <div class="stat-label">Top scorer</div>
           <div class="stat-value amber">1450</div>
           <div class="stat-sub">Muhammadali K.</div>
@@ -181,7 +183,7 @@
                   <th></th>
                 </tr>
               </thead>
-              <tbody id="studentTableBody"></tbody>
+              <tbody id="studentTableBody" data-skeleton="table-row" data-skeleton-count="5" data-skeleton-columns="5"></tbody>
             </table>
           </div>
         </div>
@@ -213,7 +215,7 @@
               <span class="sec-title">Recent activity</span>
             </div>
             <div class="activity-card">
-              <div class="activity-list" id="activityFeed"></div>
+              <div class="activity-list" id="activityFeed" data-skeleton="list-item" data-skeleton-count="4"></div>
             </div>
           </div>
         </div>
@@ -247,7 +249,7 @@
           <input type="text" placeholder="Set a temporary password" id="newStudentPass"
             style="width:100%;background:var(--teal-light);border:1.5px solid var(--teal-mid);border-radius:9px;padding:0.65rem 0.85rem;font-size:0.9rem;font-family:'Inter',sans-serif;color:var(--text);outline:none;"/>
         </div>
-        <button onclick="addStudent()" class="btn btn-primary" style="width:100%;justify-content:center;padding:0.75rem;font-size:0.9rem;margin-top:0.25rem;border-radius:9px;">
+        <button onclick="addStudent(this)" class="btn btn-primary" style="width:100%;justify-content:center;padding:0.75rem;font-size:0.9rem;margin-top:0.25rem;border-radius:9px;">
           Create student account
         </button>
       </div>
@@ -278,7 +280,7 @@
         <div style="background:var(--teal-light);border:1.5px solid var(--teal-mid);border-radius:9px;padding:0.85rem;font-size:0.82rem;color:var(--text-muted);line-height:1.5;">
           After creating the test you'll be taken to the question builder to add all questions one by one.
         </div>
-        <button onclick="createTest()" class="btn btn-primary" style="width:100%;justify-content:center;padding:0.75rem;font-size:0.9rem;margin-top:0.25rem;border-radius:9px;">
+        <button onclick="createTest(this)" class="btn btn-primary" style="width:100%;justify-content:center;padding:0.75rem;font-size:0.9rem;margin-top:0.25rem;border-radius:9px;">
           Create &amp; build questions →
         </button>
       </div>

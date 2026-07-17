@@ -15,6 +15,8 @@
   <link rel="apple-touch-icon" sizes="180x180" href="assets/brand/4prep-logo-color-180.png">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="css/logo.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <script src="js/animations.js"></script>
   <script src="js/logo.js" defer></script>
   <script src="js/theme.js" defer></script>
 </head>
@@ -42,7 +44,7 @@
     <div class="topbar"><span class="topbar-title">My Learning Space</span></div>
     <div class="content">
       <div class="page-head"><h1>My Learning Space</h1><p>Access your class materials and track your progress.</p></div>
-      <div class="class-list" id="classList"><div class="empty-state">Loading classes...</div></div>
+      <div class="class-list" id="classList" data-skeleton="card" data-skeleton-count="3"><div class="empty-state">Loading classes...</div></div>
     </div>
   </div>
 

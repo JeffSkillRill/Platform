@@ -15,6 +15,8 @@
   <link rel="apple-touch-icon" sizes="180x180" href="assets/brand/4prep-logo-color-180.png">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="css/logo.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <script src="js/animations.js"></script>
   <script src="js/logo.js" defer></script>
   <script src="js/theme.js" defer></script>
 </head>
@@ -35,7 +37,7 @@
     <div class="topbar"><div class="topbar-title">Vocabulary</div><div class="topbar-actions"><button class="btn btn-primary" id="newListBtn">New list</button></div></div>
     <section class="content">
       <div class="page-head"><h1>Vocabulary</h1><p>Manage vocabulary lists and their words.</p></div>
-      <div id="adminVocabApp"></div>
+      <div id="adminVocabApp" data-skeleton="list-item" data-skeleton-count="5"></div>
     </section>
   </main>
 
@@ -45,7 +47,7 @@
       <label for="listTitle">Title</label><input id="listTitle" required>
       <label for="listDescription">Description</label><textarea id="listDescription" rows="2"></textarea>
       <label for="listClass">Class scope</label><select id="listClass"><option value="">All students</option></select>
-      <div class="modal-actions"><button class="btn btn-secondary" type="button" id="cancelListBtn">Cancel</button><button class="btn btn-primary" type="submit">Save</button></div>
+      <div class="modal-actions"><button class="btn btn-secondary" type="button" id="cancelListBtn">Cancel</button><button class="btn btn-primary" id="saveListBtn" type="submit">Save</button></div>
     </form>
   </div>
   <div class="modal" id="adminWordModal">
@@ -56,7 +58,7 @@
       <label for="adminSynonymsInput">Synonyms</label><input id="adminSynonymsInput" placeholder="comma, separated">
       <label for="adminAntonymsInput">Antonyms</label><input id="adminAntonymsInput" placeholder="comma, separated">
       <label for="adminExampleInput">Example</label><textarea id="adminExampleInput" rows="2"></textarea>
-      <div class="modal-actions"><button class="btn btn-secondary" type="button" id="cancelAdminWordBtn">Cancel</button><button class="btn btn-primary" type="submit">Save word</button></div>
+      <div class="modal-actions"><button class="btn btn-secondary" type="button" id="cancelAdminWordBtn">Cancel</button><button class="btn btn-primary" id="saveAdminWordBtn" type="submit">Save word</button></div>
     </form>
   </div>
 

@@ -148,40 +148,60 @@
     document.getElementById('vocabApp').innerHTML = `<section class="card"><div class="tag blue">Question ${quiz.index + 1}/${quiz.items.length}</div><h2 style="margin-top:1rem;">${window.escapeHtml(item.word)}</h2>${options.map((option) => `<button class="quiz-choice" data-answer="${option.id}">${window.escapeHtml(option.definition)}</button>`).join('')}</section>`;
     document.querySelectorAll('[data-answer]').forEach((button) => {
       button.addEventListener('click', async () => {
-        if (button.dataset.answer === item.id) quiz.correct += 1;
-        await window.satRest('vocab_progress?on_conflict=student_id,word_id', {
-          method: 'POST',
-          headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
-          body: { student_id: context.profile.id, word_id: item.id, status: button.dataset.answer === item.id ? 'known' : 'learning', last_reviewed_at: new Date().toISOString(), correct_streak: button.dataset.answer === item.id ? 1 : 0 },
+        const isCorrect = button.dataset.answer === item.id;
+        document.querySelectorAll('[data-answer]').forEach((choice) => {
+          choice.disabled = true;
+          if (choice.dataset.answer === item.id) choice.classList.add('answer-correct');
         });
-        quiz.index += 1;
-        renderQuiz();
+        if (!isCorrect) button.classList.add('answer-wrong');
+        if (isCorrect) quiz.correct += 1;
+        try {
+          await window.satRest('vocab_progress?on_conflict=student_id,word_id', {
+            method: 'POST',
+            headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
+            body: { student_id: context.profile.id, word_id: item.id, status: isCorrect ? 'known' : 'learning', last_reviewed_at: new Date().toISOString(), correct_streak: isCorrect ? 1 : 0 },
+          });
+          quiz.index += 1;
+          renderQuiz();
+        } catch (error) {
+          document.querySelectorAll('[data-answer]').forEach((choice) => {
+            choice.disabled = false;
+            choice.classList.remove('answer-correct', 'answer-wrong');
+          });
+          throw error;
+        }
       });
     });
   }
 
   function openWordModal() {
     document.getElementById('wordForm').reset();
-    document.getElementById('wordModal').classList.add('open');
+    window.satAnimations.openModal('#wordModal');
   }
 
   function closeWordModal() {
-    document.getElementById('wordModal').classList.remove('open');
+    window.satAnimations.closeModal('#wordModal');
   }
 
   async function saveWord(event) {
     event.preventDefault();
-    const list = await ensurePersonalList();
-    await window.satInsert('vocab_words', {
-      list_id: list.id,
-      word: document.getElementById('wordInput').value.trim(),
-      definition: document.getElementById('definitionInput').value.trim(),
-      synonyms: parseCSV(document.getElementById('synonymsInput').value),
-      antonyms: parseCSV(document.getElementById('antonymsInput').value),
-      example: document.getElementById('exampleInput').value.trim() || null,
-    });
-    closeWordModal();
-    await load();
+    const button = document.getElementById('saveWordBtn');
+    window.satSetButtonLoading(button, true, 'Saving word');
+    try {
+      const list = await ensurePersonalList();
+      await window.satInsert('vocab_words', {
+        list_id: list.id,
+        word: document.getElementById('wordInput').value.trim(),
+        definition: document.getElementById('definitionInput').value.trim(),
+        synonyms: parseCSV(document.getElementById('synonymsInput').value),
+        antonyms: parseCSV(document.getElementById('antonymsInput').value),
+        example: document.getElementById('exampleInput').value.trim() || null,
+      });
+      closeWordModal();
+      await load();
+    } finally {
+      window.satSetButtonLoading(button, false);
+    }
   }
 
   async function load() {

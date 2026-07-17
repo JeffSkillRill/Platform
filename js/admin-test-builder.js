@@ -140,8 +140,8 @@
         showToast(`${incomplete.length} question(s) are incomplete.`); return;
       }
 
-      const btn = document.querySelector('.btn-primary');
-      btn.disabled = true; btn.textContent = 'Publishing…';
+      const btn = document.getElementById('publishTestBtn');
+      window.satSetButtonLoading(btn, true, 'Publishing test');
 
       try {
         let testId = editingTestId;
@@ -224,7 +224,7 @@
       } catch(err) {
         showToast(`Failed to publish. Test stayed as ${editingTestId ? 'draft' : originalStatus}.`);
         console.error(err);
-        btn.disabled = false; btn.textContent = 'Publish test';
+        window.satSetButtonLoading(btn, false);
       }
     }
 
@@ -569,7 +569,7 @@
               <span style="font-size:0.6rem;font-weight:700;color:${done?'#3CDBBF':'rgba(255,255,255,0.3)'};">${count}/${mod.target}</span>
             </div>
             <div style="height:4px;background:rgba(255,255,255,0.08);border-radius:99px;overflow:hidden;">
-              <div style="height:100%;width:${pct}%;background:${color};border-radius:99px;transition:width 0.3s;"></div>
+              <div style="height:100%;width:100%;background:${color};border-radius:99px;transform:scaleX(${pct / 100});transform-origin:left center;"></div>
             </div>
           </div>`;
       }).join('');
@@ -614,8 +614,7 @@
     function showToast(msg) {
       const t = document.getElementById('toast');
       document.getElementById('toastMsg').textContent = msg;
-      t.classList.add('show');
-      setTimeout(() => t.classList.remove('show'), 2800);
+      window.satAnimations.showToast(t);
     }
 
     // ---- Init ----

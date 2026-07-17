@@ -117,15 +117,14 @@
 
     list.querySelectorAll('[data-start-id]').forEach((button) => {
       button.addEventListener('click', async () => {
-        button.disabled = true;
-        button.textContent = 'Opening...';
+        window.satSetButtonLoading(button, true, 'Opening test');
         try {
           await startTest(button.dataset.startId);
         } catch (err) {
           console.error(err);
-          button.disabled = false;
-          button.textContent = 'Start';
           alert('Could not start this test. Please try again.');
+        } finally {
+          window.satSetButtonLoading(button, false);
         }
       });
     });
