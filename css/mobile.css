@@ -3,13 +3,40 @@
    Turns the fixed sidebar into an off-canvas drawer, adds a
    mobile topbar with hamburger (injected by js/mobile-nav.js),
    and makes tables/topbars usable on small screens.
+
+   IMPORTANT: the breakpoint below must be 1024px, NOT 768px.
+   Individual page stylesheets still contain legacy media blocks
+   that hide .sidebar at widths up to 1000px (680/760/820/840/
+   900/920/980/1000 depending on the page). The drawer + burger
+   must cover ALL of those widths, otherwise there is a "dead
+   zone" (e.g. a 900px window) where a page has no sidebar and
+   no burger — navigation becomes impossible. Keep this value
+   >= the largest legacy sidebar-hiding breakpoint. Must match
+   the matchMedia width in js/mobile-nav.js.
    ============================================================ */
 
 .mobile-topbar .satm-burger,
 .satm-topbar,
 .satm-overlay { display: none; }
 
-@media (max-width: 768px) {
+/* Keep sidebar icon sizing consistent on pages whose compact legacy
+   styles do not define .nav-icon themselves. */
+.sidebar .nav-icon,
+.nav-sidebar .nav-icon {
+  display: block;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  opacity: 0.72;
+}
+
+.sidebar .nav-item.active .nav-icon,
+.nav-sidebar .nav-item.active .nav-icon { opacity: 1; }
+
+.sidebar .nav-item.has-injected-nav-icon,
+.nav-sidebar .nav-item.has-injected-nav-icon { gap: 9px; }
+
+@media (max-width: 1024px) {
   html { overflow-x: hidden; }
   body { overflow-x: hidden; }
 
@@ -51,26 +78,33 @@
   .satm-burger svg { width: 20px; height: 20px; stroke: #fff; }
   .mobile-topbar .satm-burger { display: inline-flex; }
 
+  /* Pages with their own .mobile-topbar (e.g. student-home) only show
+     it at <=768px in their page CSS — force it visible across the whole
+     drawer range so the burger is never missing. */
+  .mobile-topbar { display: flex !important; }
+
   /* ---------- Sidebar becomes an off-canvas drawer ---------- */
+  /* transform/z-index carry !important so no page stylesheet can
+     restack the drawer below the overlay or keep it on screen. */
   .sidebar, .nav-sidebar {
     display: flex !important;
     position: fixed !important;
     top: 0; left: 0; bottom: 0;
     width: min(280px, 84vw) !important;
-    transform: translateX(-105%);
+    transform: translateX(-105%) !important;
     transition: transform 0.25s ease;
-    z-index: 400;
+    z-index: 400 !important;
     box-shadow: 0 0 60px rgba(11,22,40,0.45);
     overflow-y: auto;
   }
   body.satm-nav-open .sidebar,
-  body.satm-nav-open .nav-sidebar { transform: translateX(0); }
+  body.satm-nav-open .nav-sidebar { transform: translateX(0) !important; }
 
   .satm-overlay {
     position: fixed;
     inset: 0;
     background: rgba(11,22,40,0.55);
-    z-index: 350;
+    z-index: 350 !important;
   }
   body.satm-nav-open .satm-overlay { display: block; }
   body.satm-nav-open { overflow: hidden; }

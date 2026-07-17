@@ -296,6 +296,7 @@ html.sat-animations:not(.sat-page-ready) body {
 }
 
 .nav-item {
+  position: relative;
   isolation: isolate;
 }
 
@@ -306,6 +307,7 @@ html.sat-animations:not(.sat-page-ready) body {
   z-index: -1;
   background: rgba(60, 219, 191, 0.14);
   opacity: 0;
+  pointer-events: none;
   transition: opacity var(--motion-micro) var(--motion-enter);
 }
 
@@ -325,6 +327,7 @@ body[data-auth-role="admin"] .nav-item::after {
   background: var(--teal, #3cdbbf);
   transform: scaleY(0);
   transform-origin: center;
+  pointer-events: none;
   transition: transform var(--motion-micro) var(--motion-enter);
 }
 
