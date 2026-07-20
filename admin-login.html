@@ -30,20 +30,20 @@
     <p class="subtitle">Sign in to manage students and tests.</p>
     <div class="divider"></div>
 
-    <div class="global-error" id="globalError">Incorrect username or password. Try again.</div>
+      <div class="global-error" id="globalError" role="alert" aria-live="polite">Incorrect username or password. Try again.</div>
 
     <form id="adminLoginForm" novalidate>
       <label for="username">Username</label>
-      <input type="text" id="username" name="username" placeholder="admin" autocomplete="username" spellcheck="false"/>
-      <p class="error-msg" id="usernameError">Username is required.</p>
+      <input type="text" id="username" name="username" placeholder="admin" autocomplete="username" spellcheck="false" required aria-describedby="usernameError"/>
+      <p class="error-msg" id="usernameError" aria-live="polite">Username is required.</p>
 
       <label for="password">Password</label>
       <div class="password-wrap">
-        <input type="password" id="password" name="password" placeholder="••••••••" autocomplete="current-password"/>
+        <input type="password" id="password" name="password" placeholder="••••••••" autocomplete="current-password" required aria-describedby="passwordError"/>
         <button type="button" class="toggle-pw" id="togglePw" aria-label="Show password">Show</button>
       </div>
       <div class="pw-gap"></div>
-      <p class="error-msg" id="passwordError">Password is required.</p>
+      <p class="error-msg" id="passwordError" aria-live="polite">Password is required.</p>
 
       <button type="submit" class="btn-login" id="submitBtn">Sign in</button>
     </form>
@@ -53,6 +53,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
   <script src="js/shared.js"></script>
-  <script src="js/admin-login.js"></script>
+  <script src="js/admin-login.js?v=20260720-qa1"></script>
 </body>
 </html>

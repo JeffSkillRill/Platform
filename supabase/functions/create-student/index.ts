@@ -56,7 +56,7 @@ Deno.serve(async (request) => {
   const fullName = String(body.full_name || '').trim();
   const username = String(body.username || '').trim().toLowerCase();
   const password = String(body.password || '');
-  const assignExistingTests = body.assign_existing_tests !== false;
+  const assignExistingTests = body.assign_existing_tests === true;
 
   if (!fullName || !username || password.length < 6) {
     return json({ error: 'Full name, username, and a 6+ character password are required.' }, 400);

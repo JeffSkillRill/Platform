@@ -201,6 +201,19 @@
     }
   }
 
+  async function validateAttempt() {
+    const attemptRows = await window.satRest(
+      `test_attempts?id=eq.${encodeURIComponent(attemptId)}&select=id,test_id,status&limit=1`
+    );
+    const attempt = attemptRows[0];
+    if (!attempt || attempt.status !== 'in_progress') {
+      throw new Error('Attempt not found or already submitted.');
+    }
+    if (attempt.test_id !== testId) {
+      throw new Error('This attempt does not belong to the requested test.');
+    }
+  }
+
   function buildModules() {
     modules = MODULE_ORDER.map((key) => ({
       key,
@@ -248,7 +261,10 @@
     const duration = moduleDurationSecs(mod.key);
     const now = Date.now();
     moduleStartedAt = options.restoring && options.moduleStartedAt ? options.moduleStartedAt : now;
-    moduleDeadlineAt = options.restoring && options.moduleDeadlineAt ? options.moduleDeadlineAt : now + duration * 1000;
+    const maximumDeadline = moduleStartedAt + duration * 1000;
+    moduleDeadlineAt = options.restoring && options.moduleDeadlineAt
+      ? Math.min(options.moduleDeadlineAt, maximumDeadline)
+      : maximumDeadline;
 
     const modQs = mod.questions || [];
     currentQIdx = Math.min(Math.max(currentQIdx, 0), Math.max(modQs.length - 1, 0));
@@ -270,18 +286,28 @@
   function finishCurrentModuleTime() {
     if (!moduleStartedAt) return;
     const duration = moduleDurationSecs(activeModule().key);
-    const elapsed = Math.min(duration, Math.max(0, Math.floor((Date.now() - moduleStartedAt) / 1000)));
+    const effectiveEnd = Math.min(
+      Date.now(),
+      moduleDeadlineAt || Date.now(),
+      moduleStartedAt + duration * 1000
+    );
+    const elapsed = Math.min(duration, Math.max(0, Math.floor((effectiveEnd - moduleStartedAt) / 1000)));
     elapsedWorkSecs += elapsed;
     moduleStartedAt = null;
     moduleDeadlineAt = null;
   }
 
   function remainingSecs() {
+    if (!Number.isFinite(moduleDeadlineAt)) return 0;
     return Math.max(0, Math.ceil((moduleDeadlineAt - Date.now()) / 1000));
   }
 
   function startTimer() {
     updateTimerDisplay();
+    if (remainingSecs() <= 0) {
+      showTimeUp();
+      return;
+    }
     timerInterval = setInterval(() => {
       updateTimerDisplay();
       saveProgress(false);
@@ -293,6 +319,7 @@
   }
 
   function updateTimerDisplay() {
+    if (!Number.isFinite(moduleDeadlineAt)) return;
     const total = remainingSecs();
     const minutes = Math.floor(total / 60);
     const seconds = total % 60;
@@ -460,7 +487,7 @@
   function sprPreviewHtml(value) {
     const cleaned = sanitizeSprValue(value || '');
     const chars = cleaned ? cleaned.split('') : [];
-    const slots = Array.from({ length: 6 }, (_, index) => chars[index] || '');
+    const slots = Array.from({ length: 5 }, (_, index) => chars[index] || '');
     return `Entry preview: ${slots.map((char) => `<span class="spr-slot">${window.escapeHtml(char || ' ')}</span>`).join('')}`;
   }
 
@@ -468,7 +495,7 @@
     return String(value || '')
       .replace(/[^0-9./-]/g, '')
       .replace(/(?!^)-/g, '')
-      .slice(0, 6);
+      .slice(0, 5);
   }
 
   function buildAnswerInput(q, chosen) {
@@ -482,7 +509,7 @@
             id="sprInput"
             type="text"
             inputmode="decimal"
-            maxlength="6"
+            maxlength="5"
             autocomplete="off"
             value="${window.escapeHtml(value)}"
             oninput="handleSprInput(this.value)"
@@ -517,7 +544,7 @@
     const isLast = currentQIdx === modQs.length - 1;
     const isLastMod = currentMod === modules.length - 1;
     const imageUrl = window.safeImageUrl(q.image_url);
-    const imageHtml = imageUrl ? `<img class="q-image" src="${window.escapeHtml(imageUrl)}" alt=""/>` : '';
+    const imageHtml = imageUrl ? `<img class="q-image" src="${window.escapeHtml(imageUrl)}" alt="Question illustration for this prompt"/>` : '';
     const answerHtml = buildAnswerInput(q, chosen);
     const eliminateHtml = isSpr(q)
       ? ''
@@ -753,7 +780,7 @@
     }
     if (!isSpr(q)) {
       const map = { '1': 0, '2': 1, '3': 2, '4': 3, a: 0, b: 1, c: 2, d: 3 };
-      if (Object.prototype.hasOwnProperty.call(map, key)) {
+      if (Object.prototype.hasOwnProperty.call(map, key) && map[key] < q.choices.length) {
         event.preventDefault();
         selectAnswer(map[key]);
       }
@@ -787,10 +814,10 @@
 
     setupToolEvents();
     applyZoom();
-    updateTimerDisplay();
     window.addEventListener('beforeunload', () => saveProgress(true));
 
     try {
+      await validateAttempt();
       await loadTest();
     } catch (err) {
       console.error(err);

@@ -46,7 +46,7 @@
   }
 
   function sanitizeSpr(value) {
-    return String(value || '').replace(/[^0-9./-]/g, '').replace(/(?!^)-/g, '').slice(0, 6);
+    return String(value || '').replace(/[^0-9./-]/g, '').replace(/(?!^)-/g, '').slice(0, 5);
   }
 
   function currentQuestion() {
@@ -57,7 +57,7 @@
 
   function renderChoices(q) {
     if ((q.answer_type || 'mcq') === 'spr') {
-      return `<input class="spr-input" id="sprPracticeInput" type="text" inputmode="decimal" maxlength="6" value="${window.escapeHtml(selectedText)}" placeholder="Enter answer" />`;
+      return `<input class="spr-input" id="sprPracticeInput" type="text" inputmode="decimal" maxlength="5" value="${window.escapeHtml(selectedText)}" placeholder="Enter answer" />`;
     }
 
     const choices = window.parseJson(q.choices, []);
@@ -174,6 +174,9 @@
         answered_at: new Date().toISOString(),
       });
       render();
+    } catch (err) {
+      console.error(err);
+      alert('Could not check your answer. Please check your connection and try again.');
     } finally {
       window.satSetButtonLoading(button, false);
     }

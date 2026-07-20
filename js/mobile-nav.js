@@ -52,6 +52,24 @@
 
   ensureNavIcons();
 
+  function ensureLogoutButton() {
+    if (sidebar.querySelector('[data-satm-logout], [onclick*="handleLogout"], [onclick*="handleAdminLogout"]')) return;
+    const host = sidebar.querySelector('.sidebar-bottom') || sidebar;
+    const button = document.createElement('button');
+    const isAdmin = document.body.dataset.authRole === 'admin';
+    button.type = 'button';
+    button.className = 'satm-sidebar-logout';
+    button.dataset.satmLogout = 'true';
+    button.textContent = 'Sign out';
+    button.addEventListener('click', () => {
+      const handler = isAdmin ? window.handleAdminLogout : window.handleLogout;
+      if (typeof handler === 'function') handler();
+    });
+    host.appendChild(button);
+  }
+
+  ensureLogoutButton();
+
   function makeBurger() {
     const b = document.createElement('button');
     b.type = 'button';

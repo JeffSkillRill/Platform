@@ -14,15 +14,24 @@
   });
 
   function setError(inputId, errorId, msg) {
-    document.getElementById(inputId).classList.add('error');
+    const input = document.getElementById(inputId);
+    input.classList.add('error');
+    input.setAttribute('aria-invalid', 'true');
     const error = document.getElementById(errorId);
     error.textContent = msg;
     error.classList.add('visible');
   }
 
   function clearError(inputId, errorId) {
-    document.getElementById(inputId).classList.remove('error');
+    const input = document.getElementById(inputId);
+    input.classList.remove('error');
+    input.removeAttribute('aria-invalid');
     document.getElementById(errorId).classList.remove('visible');
+  }
+
+  function showGlobalError(message) {
+    globalError.textContent = message;
+    globalError.classList.add('visible');
   }
 
   usernameInput.addEventListener('input', () => {
@@ -38,7 +47,9 @@
   async function requireStudentProfile(userId) {
     const profile = await window.satGetProfile(userId);
     if (!profile || profile.role !== 'student' || profile.is_active === false) {
-      throw new Error('This login is not an active student account.');
+      const error = new Error('This login is not an active student account.');
+      error.code = 'SAT_PROFILE_ACCESS';
+      throw error;
     }
     return profile;
   }
@@ -57,7 +68,10 @@
       setError('password', 'passwordError', 'Password is required.');
       valid = false;
     }
-    if (!valid) return;
+    if (!valid) {
+      (username ? passwordInput : usernameInput).focus();
+      return;
+    }
 
     window.satSetButtonLoading(submitBtn, true, 'Signing in');
 
@@ -67,9 +81,30 @@
         email: window.satAuthEmailFromUsername(username),
         password,
       });
-      if (error) throw error;
+      if (error) {
+        console.error(error);
+        if (error.status === 400 || error.status === 401) {
+          showGlobalError('Incorrect username or password. Check with your instructor if you forgot your login.');
+        } else {
+          showGlobalError('Could not reach the sign-in service. Check your connection and try again.');
+        }
+        return;
+      }
 
-      const profile = await requireStudentProfile(data.user.id);
+      let profile;
+      try {
+        profile = await requireStudentProfile(data.user.id);
+      } catch (profileErr) {
+        console.error(profileErr);
+        if (profileErr.code === 'SAT_PROFILE_ACCESS') {
+          try { await client.auth.signOut(); } catch (signOutErr) { console.error(signOutErr); }
+          showGlobalError(profileErr.message);
+        } else {
+          showGlobalError('You are signed in, but your student profile could not be loaded. Check your connection and try again.');
+        }
+        return;
+      }
+
       localStorage.setItem('sat_user', JSON.stringify({
         id: profile.id,
         name: profile.full_name,
@@ -80,7 +115,7 @@
     } catch (err) {
       console.error(err);
       try { await window.satGetClient().auth.signOut(); } catch (signOutErr) { console.error(signOutErr); }
-      globalError.classList.add('visible');
+      showGlobalError('Could not complete sign-in. Check your connection and try again.');
     } finally {
       window.satSetButtonLoading(submitBtn, false);
     }

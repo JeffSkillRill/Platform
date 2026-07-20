@@ -1,3 +1,4 @@
+(function () {
     // ================================================================
     // DATA STRUCTURE
     // questions are now stored per module, not in one flat array:
@@ -36,7 +37,6 @@
     const params = new URLSearchParams(window.location.search);
     let context = null;
     let editingTestId = params.get('id');
-    let originalStatus = 'draft';
     let classOptions = [];
 
     function toDatetimeLocal(value) {
@@ -66,7 +66,6 @@
         const testRows = await window.satRest(`tests?id=eq.${encodeURIComponent(editingTestId)}&select=*`);
         const test = testRows[0];
         if (!test) throw new Error('Test not found.');
-        originalStatus = test.status || 'draft';
         document.getElementById('testNameInput').value = test.name || '';
         const assignmentRows = await window.satRest(`test_assignments?test_id=eq.${encodeURIComponent(editingTestId)}&select=due_at,class_id`);
         const selectedAssignment = assignmentRows.find((row) => row.class_id) || assignmentRows[0];
@@ -121,6 +120,40 @@
     }
 
     // ---- Publish to Supabase ----
+    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+    function ensureRowUuid(q) {
+      if (!UUID_RE.test(String(q.id))) q.id = crypto.randomUUID();
+      return q.id;
+    }
+
+    function isValidSprToken(value) {
+      const token = String(value || '').trim();
+      if (!token || token.length > 5) return false;
+      if (/^-?(?:\d+(?:\.\d*)?|\.\d+)$/.test(token)) return true;
+      const fraction = token.match(/^(-?\d+)\/(\d+)$/);
+      return Boolean(fraction && Number(fraction[2]) !== 0);
+    }
+
+    function hasValidSprAnswers(value) {
+      const tokens = String(value || '').split(',').map((token) => token.trim());
+      return tokens.length > 0 && tokens.every(isValidSprToken);
+    }
+
+    // Update rows one PATCH each, in small parallel batches. The
+    // authenticated role has a column-limited SELECT grant on questions
+    // (answer fields are withheld), which blocks both upsert (ON CONFLICT)
+    // and any return=representation — plain PATCH/INSERT with
+    // return=minimal are the only verbs that work.
+    async function patchQuestions(rows) {
+      const batchSize = 10;
+      for (let i = 0; i < rows.length; i += batchSize) {
+        await Promise.all(rows.slice(i, i + batchSize).map(({ id, ...fields }) =>
+          window.satPatch(`questions?id=eq.${encodeURIComponent(id)}`, fields, 'return=minimal')
+        ));
+      }
+    }
+
     async function publishTest() {
       const name = document.getElementById('testNameInput').value.trim();
       if (!name) { showToast('Please enter a test name first.'); return; }
@@ -133,26 +166,23 @@
       const incomplete = all.filter((q) => {
         const type = q.answerType || 'mcq';
         if (!q.stem.trim()) return true;
-        if (type === 'spr') return !String(q.answerText || '').trim();
+        if (type === 'spr') return !hasValidSprAnswers(q.answerText);
         return !Array.isArray(q.choices) || q.choices.some((c) => !c.trim()) || q.correct === null;
       });
       if (incomplete.length > 0) {
-        showToast(`${incomplete.length} question(s) are incomplete.`); return;
+        showToast(`${incomplete.length} question(s) are incomplete or contain invalid answers.`); return;
       }
 
       const btn = document.getElementById('publishTestBtn');
       window.satSetButtonLoading(btn, true, 'Publishing test');
 
+      let testId = editingTestId;
+      let assignmentsSnapshot = [];
+      let assignmentsDeleted = false;
+      let assignmentsReplaced = false;
+
       try {
-        let testId = editingTestId;
-        if (testId) {
-          await window.satPatch(`tests?id=eq.${encodeURIComponent(testId)}`, {
-            name,
-            status: 'draft',
-            updated_at: new Date().toISOString(),
-          });
-          await window.satDelete(`questions?test_id=eq.${encodeURIComponent(testId)}`);
-        } else {
+        if (!testId) {
           const [created] = await window.satInsert('tests', {
             name,
             status: 'draft',
@@ -162,31 +192,94 @@
           editingTestId = testId;
         }
 
-        const questionRows = [];
+        // Desired final question set, ordered 0..n-1 across modules.
+        const entries = [];
         let orderNum = 0;
         Object.entries(moduleQuestions).forEach(([modKey, qs]) => {
           const cfg = MODULE_CONFIG[modKey];
           qs.forEach((q) => {
-            questionRows.push({
-              test_id:    testId,
-              section:    cfg.section,
-              module_key: modKey,
-              difficulty: q.difficulty,
-              stem:       q.stem,
-              image_url:  q.image || null,
-              choices:    (q.answerType || 'mcq') === 'spr' ? [] : q.choices,
-              correct:    (q.answerType || 'mcq') === 'spr' ? null : q.correct,
-              answer_type:(q.answerType || 'mcq'),
-              answer_text:(q.answerType || 'mcq') === 'spr' ? String(q.answerText || '').trim() : null,
-              topic:      q.topic || null,
-              explanation:q.explanation || null,
-              order_num:  orderNum++,
+            entries.push({
+              q,
+              finalOrder: orderNum++,
+              content: {
+                test_id:    testId,
+                section:    cfg.section,
+                module_key: modKey,
+                difficulty: q.difficulty,
+                stem:       q.stem,
+                image_url:  q.image || null,
+                choices:    (q.answerType || 'mcq') === 'spr' ? [] : q.choices,
+                correct:    (q.answerType || 'mcq') === 'spr' ? null : q.correct,
+                answer_type:(q.answerType || 'mcq'),
+                answer_text:(q.answerType || 'mcq') === 'spr' ? String(q.answerText || '').trim() : null,
+                topic:      q.topic || null,
+                explanation:q.explanation || null,
+              },
             });
           });
         });
 
-        await window.satInsert('questions', questionRows);
+        // Hide the test from students for the whole rewrite so a student
+        // can never load a half-updated question set.
+        await window.satPatch(`tests?id=eq.${encodeURIComponent(testId)}`, {
+          name,
+          status: 'draft',
+          updated_at: new Date().toISOString(),
+        }, 'return=minimal');
+
+        const existing = await window.satRest(
+          `admin_questions?test_id=eq.${encodeURIComponent(testId)}&select=id,order_num`
+        );
+        const existingIds = new Set(existing.map((item) => item.id));
+        const kept = entries.filter((entry) => existingIds.has(entry.q.id));
+        const added = entries.filter((entry) => !existingIds.has(entry.q.id));
+        const keptIds = new Set(kept.map((entry) => entry.q.id));
+        const removedIds = existing.map((item) => item.id).filter((id) => !keptIds.has(id));
+
+        // Kept questions are updated in place (same row id), so submitted
+        // attempts keep their per-question history. Their order_num is first
+        // parked below every value in use — the (test_id, module_key,
+        // order_num) unique key would otherwise collide mid-rewrite — and
+        // moved to its final value once removed/added rows are settled.
+        const lowestExistingOrder = existing.reduce(
+          (lowest, item) => Math.min(lowest, Number(item.order_num) || 0),
+          0
+        );
+        const stagingStart = lowestExistingOrder - entries.length;
+        await patchQuestions(kept.map((entry, index) => ({
+          id: entry.q.id,
+          ...entry.content,
+          order_num: stagingStart + index,
+        })));
+
+        if (removedIds.length) {
+          const ids = removedIds.map((id) => encodeURIComponent(id)).join(',');
+          await window.satDelete(`questions?id=in.(${ids})`);
+        }
+
+        if (added.length) {
+          // Row ids are generated client-side so the insert can use
+          // return=minimal, and so a retry after a partial failure updates
+          // these rows (they match by id) instead of inserting duplicates.
+          await window.satInsert('questions', added.map((entry) => ({
+            id: ensureRowUuid(entry.q),
+            ...entry.content,
+            order_num: entry.finalOrder,
+          })), 'return=minimal');
+        }
+
+        await patchQuestions(kept.map((entry) => ({
+          id: entry.q.id,
+          order_num: entry.finalOrder,
+        })));
+
+        // Snapshot assignments before replacing them so a failure can put
+        // them back instead of silently unassigning the test.
+        assignmentsSnapshot = await window.satRest(
+          `test_assignments?test_id=eq.${encodeURIComponent(testId)}&select=test_id,class_id,student_id,assigned_by,due_at`
+        );
         await window.satDelete(`test_assignments?test_id=eq.${encodeURIComponent(testId)}`);
+        assignmentsDeleted = true;
         if (classId) {
           await window.satInsert('test_assignments', {
             test_id: testId,
@@ -209,11 +302,23 @@
             });
           }
         }
-        await window.satPatch(`tests?id=eq.${encodeURIComponent(testId)}`, {
-          name,
-          status: 'published',
-          updated_at: new Date().toISOString(),
-        });
+        assignmentsReplaced = true;
+
+        try {
+          await window.satPatch(`tests?id=eq.${encodeURIComponent(testId)}`, {
+            name,
+            status: 'published',
+            updated_at: new Date().toISOString(),
+          }, 'return=minimal');
+        } catch (publishErr) {
+          console.error(publishErr);
+          await new Promise((resolve) => setTimeout(resolve, 800));
+          await window.satPatch(`tests?id=eq.${encodeURIComponent(testId)}`, {
+            name,
+            status: 'published',
+            updated_at: new Date().toISOString(),
+          }, 'return=minimal');
+        }
 
         localStorage.removeItem(`sat_draft_test_${testId}`);
         localStorage.removeItem('sat_draft_test_new');
@@ -222,8 +327,23 @@
         setTimeout(() => { window.location.href = 'admin-tests.html'; }, 1800);
 
       } catch(err) {
-        showToast(`Failed to publish. Test stayed as ${editingTestId ? 'draft' : originalStatus}.`);
         console.error(err);
+        if (assignmentsDeleted && !assignmentsReplaced && assignmentsSnapshot.length) {
+          try {
+            await window.satRest('test_assignments', {
+              method: 'POST',
+              headers: { Prefer: 'resolution=ignore-duplicates,return=minimal' },
+              body: assignmentsSnapshot,
+            });
+          } catch (restoreErr) {
+            console.error('Could not restore the previous assignments.', restoreErr);
+          }
+        }
+        // Every step above is safe to re-run: kept questions are updated by
+        // id, rows inserted before the failure are matched or cleaned up on
+        // the next attempt, and the test stays hidden as a draft until the
+        // final publish succeeds.
+        showToast('Publish failed partway. Your questions are saved and the test is hidden as a draft — click "Publish test" again to finish.');
         window.satSetButtonLoading(btn, false);
       }
     }
@@ -249,6 +369,7 @@
       document.getElementById('questionForm').style.display  = 'none';
 
       renderList();
+      if (moduleQuestions[tab].length > 0) loadQuestionIntoForm(0);
       updateAddButton();
     }
 
@@ -287,7 +408,7 @@
       if (currentQIndex !== null) collectCurrentForm();
 
       const q = {
-        id:         'q_' + Date.now(),
+        id:         (window.crypto?.randomUUID ? crypto.randomUUID() : 'q_' + Date.now()),
         module:     activeTab,
         difficulty: 'medium',
         stem:       '',
@@ -296,6 +417,8 @@
         correct:    null,
         answerType: 'mcq',
         answerText: '',
+        topic:      '',
+        explanation:'',
       };
 
       moduleQuestions[activeTab].push(q);
@@ -323,6 +446,8 @@
       document.getElementById('qDifficulty').value          = q.difficulty;
       document.getElementById('qAnswerType').value          = q.answerType || 'mcq';
       document.getElementById('qAnswerText').value          = q.answerText || '';
+      document.getElementById('qTopic').value               = q.topic || '';
+      document.getElementById('qExplanation').value         = q.explanation || '';
       document.getElementById('qStem').value                = q.stem;
       updateAnswerTypeUI(q.answerType || 'mcq');
 
@@ -423,6 +548,8 @@
       q.answerType = document.getElementById('qAnswerType').value === 'spr' ? 'spr' : 'mcq';
       q.stem       = document.getElementById('qStem').value;
       q.answerText = document.getElementById('qAnswerText').value || '';
+      q.topic      = document.getElementById('qTopic').value.trim() || null;
+      q.explanation = document.getElementById('qExplanation').value.trim() || null;
       q.correct    = q.answerType === 'spr' ? null : correctAnswer;
       q.choices    = LETTERS.map((_,i) => document.getElementById('choice'+i)?.value || '');
     }
@@ -632,4 +759,21 @@
       updateEstimator();
     }
 
+    Object.assign(window, {
+      saveDraft,
+      publishTest,
+      switchTab,
+      newQuestion,
+      deleteCurrentQuestion,
+      setAnswerType,
+      setCorrect,
+      prevQuestion,
+      saveAndNext,
+      handleImageUpload,
+      removeImage,
+      selectQuestion,
+      deleteQuestion,
+    });
+
     init();
+}());

@@ -36,6 +36,23 @@
 .sidebar .nav-item.has-injected-nav-icon,
 .nav-sidebar .nav-item.has-injected-nav-icon { gap: 9px; }
 
+.satm-sidebar-logout {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 0.75rem;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 9px;
+  background: transparent;
+  color: #fff;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.satm-sidebar-logout:hover,
+.satm-sidebar-logout:focus-visible { background: rgba(255,255,255,0.1); }
+
 @media (max-width: 1024px) {
   html { overflow-x: hidden; }
   body { overflow-x: hidden; }

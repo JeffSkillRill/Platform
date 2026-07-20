@@ -32,7 +32,7 @@
 
   function renderSetup() {
     const app = document.getElementById('bankApp');
-    const available = stats?.questions_available || questions.length;
+    const available = questions.length;
     const answered = stats?.answered || 0;
     const correct = stats?.correct || 0;
     app.innerHTML = `
@@ -60,7 +60,7 @@
             </details>`).join('')}
         </section>
       </div>
-      <div class="sticky-start"><button class="btn btn-primary" id="startSessionBtn">Start Session</button></div>`;
+      <div class="sticky-start"><button class="btn btn-primary" id="startSessionBtn" ${filteredQuestions().length ? '' : 'disabled'}>Start Session</button></div>`;
     app.querySelectorAll('[data-diff]').forEach((button) => {
       button.addEventListener('click', () => {
         const diff = button.dataset.diff;
@@ -113,23 +113,49 @@
     const q = currentQuestion();
     const choices = window.parseJson(q.choices, []);
     const isSpr = (q.answer_type || 'mcq') === 'spr';
+    const imageUrl = window.safeImageUrl(q.image_url);
+    const correctText = feedback
+      ? isSpr
+        ? feedback.answer_text
+        : feedback.correct !== null && feedback.correct !== undefined
+          ? `Choice ${LETTERS[feedback.correct]}`
+          : '—'
+      : '';
     document.getElementById('bankApp').innerHTML = `
       <section class="card session-card">
         <div class="tag blue">Question ${currentIndex + 1} of ${sessionQuestions.length}</div>
+        ${imageUrl ? `<img class="q-image" src="${window.escapeHtml(imageUrl)}" alt="Question illustration for this prompt">` : ''}
         <div class="q-stem" style="margin:1rem 0;line-height:1.7;">${window.escapeHtml(q.stem)}</div>
-        ${isSpr ? `<input id="bankSprInput" maxlength="6" inputmode="decimal" placeholder="Enter answer">` : choices.map((choice, index) => `
+        ${isSpr ? `<input id="bankSprInput" maxlength="5" inputmode="decimal" placeholder="Enter answer">` : choices.map((choice, index) => `
           <button class="choice ${selected === index ? 'selected' : ''}" data-choice="${index}"><strong>${LETTERS[index]}</strong><span>${window.escapeHtml(choice)}</span></button>`).join('')}
-        ${feedback ? `<div class="feedback ${feedback.is_correct ? 'correct' : 'wrong'}"><strong>${feedback.is_correct ? 'Correct' : 'Not quite'}</strong>${feedback.explanation ? `<div>${window.escapeHtml(feedback.explanation)}</div>` : ''}</div>` : ''}
+        ${feedback ? `<div class="feedback ${feedback.is_correct ? 'correct' : 'wrong'}"><strong>${feedback.is_correct ? 'Correct' : 'Not quite'}</strong><div>Answer: ${window.escapeHtml(correctText || '—')}</div>${feedback.explanation ? `<div>${window.escapeHtml(feedback.explanation)}</div>` : ''}</div>` : ''}
         <div style="display:flex;justify-content:space-between;gap:.75rem;margin-top:1rem;">
           <button class="btn btn-secondary" id="backToBankBtn">Exit</button>
           ${feedback ? `<button class="btn btn-primary" id="nextBankBtn">${currentIndex === sessionQuestions.length - 1 ? 'Summary' : 'Next'}</button>` : '<button class="btn btn-primary" id="checkBankBtn">Check</button>'}
         </div>
       </section>`;
     document.querySelectorAll('[data-choice]').forEach((button) => button.addEventListener('click', () => { selected = Number(button.dataset.choice); renderQuestion(); }));
-    document.getElementById('bankSprInput')?.addEventListener('input', (event) => { selectedText = event.target.value.replace(/[^0-9./-]/g, '').slice(0, 6); event.target.value = selectedText; });
-    document.getElementById('backToBankBtn').addEventListener('click', renderSetup);
+    document.getElementById('bankSprInput')?.addEventListener('input', (event) => { selectedText = event.target.value.replace(/[^0-9./-]/g, '').replace(/(?!^)-/g, '').slice(0, 5); event.target.value = selectedText; });
+    document.getElementById('backToBankBtn').addEventListener('click', exitSession);
     document.getElementById('checkBankBtn')?.addEventListener('click', checkAnswer);
     document.getElementById('nextBankBtn')?.addEventListener('click', nextQuestion);
+  }
+
+  async function exitSession() {
+    if (!session?.id) return renderSetup();
+    const button = document.getElementById('backToBankBtn');
+    window.satSetButtonLoading(button, true, 'Exiting session');
+    try {
+      await window.satRpc('finish_practice_session', { p_session_id: session.id });
+      session = null;
+      sessionQuestions = [];
+      renderSetup();
+    } catch (error) {
+      console.error(error);
+      alert('Could not close the session. Please check your connection and try again.');
+    } finally {
+      window.satSetButtonLoading(button, false);
+    }
   }
 
   async function checkAnswer() {
@@ -182,12 +208,14 @@
   }
 
   async function load() {
-    const [statRows, questionRows] = await Promise.all([
+    const [statRows, questionRows, submittedAttempts] = await Promise.all([
       window.satRpc('get_bank_stats'),
       window.satRest('student_questions?select=id,test_id,section,module_key,difficulty,topic,stem,image_url,choices,answer_type,order_num'),
+      window.satRest('test_attempts?status=eq.submitted&select=test_id'),
     ]);
     stats = Array.isArray(statRows) ? statRows[0] : statRows;
-    questions = questionRows || [];
+    const submittedTestIds = new Set((submittedAttempts || []).map((attempt) => attempt.test_id));
+    questions = (questionRows || []).filter((question) => submittedTestIds.has(question.test_id));
     renderSetup();
   }
 

@@ -5,11 +5,17 @@ Static SAT practice platform with separate Admin and Student portals backed by S
 ## Supabase Setup
 
 1. Open Supabase SQL Editor and run `schema.sql`.
-2. Run migrations in order:
+2. Run every migration in numeric order:
 
 ```sql
 -- migrations/001-spr-and-question-times.sql
 -- migrations/002-practice-and-goals.sql
+-- migrations/003-dashboard-fields.sql
+-- migrations/004-classes.sql
+-- migrations/005-question-bank.sql
+-- migrations/006-vocabulary.sql
+-- migrations/007-fix-admin-questions-view.sql
+-- migrations/008-security-and-practice-hardening.sql
 ```
 
 3. In Supabase Auth, create your real admin user. If you log in as `admin`, create the Auth email as `admin@satprep.local` unless you change `SAT_AUTH_EMAIL_DOMAIN`.
@@ -32,8 +38,15 @@ supabase functions deploy create-student --use-api
 See `docs/deploy-create-student-function.md` for details.
 
 6. Create a public Supabase Storage bucket named `question-images`.
-7. Optional: run `seed-demo-test.sql` after students exist. It creates a demo test and assigns it to active students.
+7. Optional test data, after students exist:
+   - `seed-demo-test.sql` creates the standalone demo test.
+   - `seed-practice-test-A.sql` creates Practice Test A.
+   - `seed-practice-test-A-spr-gridin.sql` runs after Practice Test A and adds its SPR/grid-in questions.
 8. Rotate the Supabase anon key in the dashboard if the old key was ever committed publicly, then update `supabase-config.js`.
+
+## Deploy
+
+The app has no build step. See [Cloudflare deployment](docs/deploy-cloudflare.md) for the Pages configuration, custom-domain setup, Supabase redirect allow-list, and required security headers. Run all migrations, including 007 and 008, before release.
 
 ## Local Use
 
@@ -59,14 +72,21 @@ Use `theme-aware` on logos that sit on a theme-changing surface. It resolves to 
 ## Page Map
 
 - Public homepage: `index.html`
-- Student: `student-login.html`, `student-home.html`, `student-tests.html`, `student-test-solve.html`, `student-results.html`, `student-test-results.html`, `student-leaderboard.html`
-- Practice: `student-practice.html`
-- Admin: `admin-login.html`, `admin-dashboard.html`, `admin-students.html`, `admin-tests.html`, `admin-test-builder.html`, `admin-leaderboard.html`
+- Student: `student-login.html`, `student-home.html`, `student-tests.html`, `student-test-solve.html`, `student-results.html`, `student-test-results.html`, `student-classes.html`, `student-question-bank.html`, `student-vocabulary.html`, `student-practice.html`, `student-leaderboard.html`
+- Admin: `admin-login.html`, `admin-dashboard.html`, `admin-students.html`, `admin-classes.html`, `admin-tests.html`, `admin-test-builder.html`, `admin-question-bank.html`, `admin-vocabulary.html`, `admin-leaderboard.html`
 
 ## Feature Migrations
 
 - `001-spr-and-question-times.sql`: adds student-produced response questions, accepted answer text kept server-side, per-question timing, SPR grading helpers, updated `student_questions`, `submit_attempt()`, and `get_attempt_review()`.
 - `002-practice-and-goals.sql`: adds `profiles.target_score`, `practice_events`, `get_mistake_questions()`, `check_practice_answer()`, and `set_target_score()`.
+- `003-dashboard-fields.sql`: adds dashboard/profile activity fields used by progress and streak views.
+- `004-classes.sql`: adds classes, class memberships, class-scoped assignments, and student class access.
+- `005-question-bank.sql`: adds filtered Question Bank practice sessions and answer checking.
+- `006-vocabulary.sql`: adds administrator/personal vocabulary lists, words, and student progress.
+- `007-fix-admin-questions-view.sql`: refreshes the admin question view after SPR columns were added.
+- `008-security-and-practice-hardening.sql`: enforces assignment checks for attempts, prevents pre-submission Question Bank answer access, validates SPR values, and safely closes practice sessions.
+
+Student and admin portal pages load a persistent light/dark theme switch. The selected theme is shared across portal pages in the browser.
 
 ## Manual Test Checklist
 

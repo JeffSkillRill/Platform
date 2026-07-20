@@ -48,6 +48,7 @@ summary { cursor:pointer; font-weight:700; font-size:.86rem; }
 .tag { display:inline-flex; border-radius:99px; padding:3px 8px; font-size:.7rem; font-weight:800; }
 .tag.blue { background:var(--teal-light); color:var(--teal-darker); }
 .btn { border:none; border-radius:9px; padding:.6rem 1rem; cursor:pointer; text-decoration:none; font:700 .82rem Inter,sans-serif; }
+.btn:disabled { opacity:.45; cursor:not-allowed; }
 .btn-primary { background:var(--teal); color:var(--navy); } .btn-primary:hover { background:var(--teal-dark); }
 .btn-secondary { background:var(--surface); color:var(--teal-darker); border:1.5px solid var(--teal-mid); }
 .sticky-start { position:sticky; bottom:1rem; margin-top:1rem; display:flex; justify-content:flex-end; }
