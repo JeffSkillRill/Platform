@@ -1,146 +1,515 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>4Prep SAT Platform</title>
+  <meta name="theme-color" content="#0b1628">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/index.css">
-  <meta name="theme-color" content="#3CDBBF">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=Space+Grotesk:wght@600;700&amp;display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/brand/favicon-32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="assets/brand/favicon-16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="assets/brand/4prep-logo-color-180.png">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="css/logo.css">
   <link rel="stylesheet" href="css/animations.css?v=20260717-navfix">
+  <link rel="stylesheet" href="css/index.css">
+  <script>document.documentElement.classList.add('js-anim');</script>
   <script src="js/animations.js?v=20260717"></script>
   <script src="js/logo.js" defer></script>
 </head>
 <body>
-  <header class="hero">
-    <nav class="nav" aria-label="Main navigation">
+  <header class="site-header" id="siteHeader">
+    <nav class="nav-shell" aria-label="Main navigation">
       <a class="brand brand-lockup" href="index.html" aria-label="4Prep home">
         <fourprep-logo size="40" variant="white"></fourprep-logo>
         <span class="brand-copy">4Prep</span>
       </a>
-      <div class="nav-links">
+
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="mobileMenu" aria-label="Open navigation menu">
+        <span></span><span></span><span></span>
+      </button>
+
+      <div class="nav-links" id="mobileMenu">
         <a class="nav-link" href="#platform">Platform</a>
+        <a class="nav-link" href="#features">Features</a>
         <a class="nav-link" href="admin-login.html">Admin</a>
         <a class="nav-button" href="student-login.html">Student login</a>
       </div>
     </nav>
-
-    <div class="hero-inner">
-      <div class="hero-copy">
-        <p class="eyebrow">Digital SAT preparation</p>
-        <h1>4Prep <span class="grad">SAT</span> Platform</h1>
-        <p class="hero-text">
-          Practice full SAT-style tests, review every answer, track your score history,
-          and see how your progress compares on the class leaderboard.
-        </p>
-        <div class="hero-actions">
-          <a class="btn btn-primary" href="student-login.html">
-            Student login
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6"/></svg>
-          </a>
-          <a class="btn btn-secondary" href="admin-login.html">Admin access</a>
-        </div>
-        <div class="hero-stats" aria-label="Platform highlights">
-          <div class="hero-stat">
-            <strong>98</strong>
-            <span>questions in a complete SAT-style test</span>
-          </div>
-          <div class="hero-stat">
-            <strong>4</strong>
-            <span>test modules matching the digital format</span>
-          </div>
-          <div class="hero-stat">
-            <strong>1600</strong>
-            <span>score tracking across attempts</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="hero-chips" aria-hidden="true">
-      <div class="answer-chip correct c1"><span class="bubble">A</span> Correct answer</div>
-      <div class="answer-chip score c2"><span class="bubble">✦</span> 1400 Club</div>
-      <div class="answer-chip timer c3"><span class="bubble">32</span> Module timer</div>
-    </div>
   </header>
 
   <main>
-    <section class="section" id="platform">
-      <div class="section-head">
-        <div>
-          <p class="eyebrow">What students get</p>
-          <h2 class="section-title">A focused place to practice, submit, and improve.</h2>
-        </div>
-        <p class="section-copy">
-          Students can take assigned tests, save progress while working, review completed attempts,
-          and follow their score growth from the dashboard.
-        </p>
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-atmosphere" aria-hidden="true">
+        <div class="parallax-layer layer-one" data-parallax="0.07"><span class="hero-blob blob-one"></span></div>
+        <div class="parallax-layer layer-two" data-parallax="0.13"><span class="hero-blob blob-two"></span></div>
+        <div class="parallax-layer layer-three" data-parallax="0.2"><span class="hero-shape shape-one"></span></div>
+        <div class="parallax-layer layer-four" data-parallax="0.1"><span class="hero-shape shape-two"></span></div>
       </div>
 
-      <div class="feature-grid">
-        <article class="feature-card">
-          <div class="feature-icon">
-            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6M7 3h6l4 4v14H7V3z"/></svg>
+      <div class="hero-grid page-width">
+        <div class="hero-copy">
+          <div class="hero-logo-stage intro-item" style="--intro: 0" aria-hidden="true">
+            <div class="hero-logo-orbit">
+              <fourprep-logo class="logo-depth" size="68" variant="white"></fourprep-logo>
+              <fourprep-logo class="logo-face" size="68" variant="white"></fourprep-logo>
+            </div>
           </div>
-          <h2>Assigned tests</h2>
-          <p>Students open published practice tests and work through Reading & Writing and Math modules.</p>
-        </article>
-        <article class="feature-card">
-          <div class="feature-icon">
-            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z"/></svg>
+          <p class="eyebrow intro-item" style="--intro: 1"><span></span>Built for focused SAT practice</p>
+          <h1 class="intro-item" id="hero-title" style="--intro: 2">Practice with purpose.<br><span class="gradient-text">Grow with clarity.</span></h1>
+          <p class="hero-text intro-item" style="--intro: 3">Take full SAT-style tests, review every answer, and follow your score growth—all in one focused learning space.</p>
+          <div class="hero-actions intro-item" style="--intro: 4">
+            <a class="btn btn-primary" href="student-login.html">
+              Student login
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>
+            </a>
+            <a class="btn btn-ghost" href="admin-login.html">Admin access</a>
           </div>
-          <h2>Timed practice</h2>
-          <p>Module timers, question navigation, and saved answers keep the test flow close to the real exam.</p>
-        </article>
-        <article class="feature-card">
-          <div class="feature-icon">
-            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 13 4 4L19 7"/><path stroke-linecap="round" stroke-linejoin="round" d="M4 21h16"/></svg>
+          <p class="hero-note intro-item" style="--intro: 5"><span aria-hidden="true">✓</span> Instructor-provided credentials keep each class connected.</p>
+        </div>
+
+        <div class="hero-visual intro-item" style="--intro: 3" aria-label="Animated SAT practice preview">
+          <div class="visual-orbit orbit-one" aria-hidden="true"></div>
+          <div class="visual-orbit orbit-two" aria-hidden="true"></div>
+          <div class="score-card" id="heroCard">
+            <div class="card-glare" aria-hidden="true"></div>
+            <div class="score-card-top">
+              <div>
+                <span class="mock-kicker">Practice session</span>
+                <strong>Reading &amp; Writing</strong>
+              </div>
+              <span class="module-pill">Module 2</span>
+            </div>
+            <div class="score-card-body">
+              <div class="score-ring" aria-label="Score history tracked up to 1600">
+                <svg viewBox="0 0 120 120" aria-hidden="true">
+                  <circle class="ring-track" cx="60" cy="60" r="48"/>
+                  <circle class="ring-value" cx="60" cy="60" r="48"/>
+                </svg>
+                <span><strong>1600</strong><small>score tracking</small></span>
+              </div>
+              <div class="question-preview">
+                <div class="question-meta"><span>Practice question</span><span>Module timer</span></div>
+                <div class="question-lines" aria-hidden="true"><i></i><i></i><i></i></div>
+                <div class="answer-row"><span>A</span><i></i></div>
+                <div class="answer-row"><span>B</span><i></i></div>
+                <div class="answer-row answer-correct"><span>C</span><i></i><b aria-label="Correct answer">✓</b></div>
+                <div class="answer-row"><span>D</span><i></i></div>
+              </div>
+            </div>
+            <div class="score-card-footer"><span><i></i> Answers saved</span><strong>Continue <b aria-hidden="true">→</b></strong></div>
           </div>
-          <h2>Answer review</h2>
-          <p>Completed tests show correct and incorrect answers so students know exactly what to revisit.</p>
-        </article>
-        <article class="feature-card">
-          <div class="feature-icon">
-            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 19V5m0 14h16M8 16v-5m4 5V8m4 8v-8"/></svg>
-          </div>
-          <h2>Progress dashboard</h2>
-          <p>The student homepage shows real submitted scores, averages, improvement, and leaderboard rank.</p>
-        </article>
+          <div class="floating-chip chip-score" aria-hidden="true"><span>↗</span><b>Score history</b></div>
+          <div class="floating-chip chip-timer" aria-hidden="true"><span>4</span><b>Timed modules</b></div>
+        </div>
+      </div>
+      <a class="scroll-cue" href="#stats" aria-label="Scroll to platform facts"><span aria-hidden="true"></span>Explore the platform</a>
+    </section>
+
+    <section class="stats-band" id="stats" aria-label="Platform facts">
+      <div class="stats-grid page-width reveal-group">
+        <div class="stat reveal" style="--i: 0"><strong data-count="98">98</strong><span>questions in a full test</span></div>
+        <div class="stat reveal" style="--i: 1"><strong data-count="4">4</strong><span>timed test modules</span></div>
+        <div class="stat reveal" style="--i: 2"><strong data-count="1600">1600</strong><span>score history scale</span></div>
       </div>
     </section>
 
-    <section class="login-band">
-      <div class="login-inner">
-        <div>
-          <h2>Ready to continue?</h2>
-          <p>Students can sign in with instructor-provided credentials. Admins can manage students, publish tests, and review class performance.</p>
+    <section class="section features-section" id="platform" aria-labelledby="features-title">
+      <div class="page-width">
+        <div class="section-heading reveal">
+          <div>
+            <p class="section-kicker">Everything in one place</p>
+            <h2 id="features-title">A clear path from practice to progress.</h2>
+          </div>
+          <p>Every tool is designed around the work students actually do: take assigned tests, understand mistakes, and build confidence over time.</p>
         </div>
-        <div class="login-actions">
-          <a class="btn btn-primary" href="student-login.html">Student login</a>
-          <a class="btn btn-secondary" href="admin-login.html">Admin login</a>
+
+        <div class="feature-grid reveal-group" id="features">
+          <article class="feature-card reveal" style="--i: 0">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l4 4v14H7zM14 3v5h5M10 12h5m-5 4h5"/></svg>
+            </div>
+            <span class="feature-number">01</span>
+            <h3>Assigned tests</h3>
+            <p>Open instructor-published SAT-style tests and move through Reading &amp; Writing and Math modules.</p>
+          </article>
+          <article class="feature-card reveal" style="--i: 1">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7v5l3 2m4.1-7A9 9 0 1 1 7 3.8M16 2v5h5"/></svg>
+            </div>
+            <span class="feature-number">02</span>
+            <h3>Timed practice</h3>
+            <p>Work with module timers and question navigation in a flow that mirrors a complete digital test.</p>
+          </article>
+          <article class="feature-card reveal" style="--i: 2">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6M5 21h14"/></svg>
+            </div>
+            <span class="feature-number">03</span>
+            <h3>Answer review</h3>
+            <p>See correct and incorrect responses after submitting, so the next study session has a clear focus.</p>
+          </article>
+          <article class="feature-card reveal" style="--i: 3">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V5m0 15h16M8 16v-4m4 4V8m4 8v-6"/></svg>
+            </div>
+            <span class="feature-number">04</span>
+            <h3>Progress dashboard</h3>
+            <p>Follow submitted scores, score history up to 1600, and class leaderboard position from one view.</p>
+          </article>
+          <article class="feature-card reveal" style="--i: 4">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5zm0 0v16M8 7h8m-8 4h6"/></svg>
+            </div>
+            <span class="feature-number">05</span>
+            <h3>Vocabulary practice</h3>
+            <p>Review vocabulary in a dedicated practice area that supports steady, repeatable study.</p>
+          </article>
+          <article class="feature-card reveal" style="--i: 5">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v14H4zM8 3v6m8-6v6M8 13h3m2 0h3m-8 4h3"/></svg>
+            </div>
+            <span class="feature-number">06</span>
+            <h3>Question bank</h3>
+            <p>Practice with an organized bank of questions to reinforce skills beyond assigned full tests.</p>
+          </article>
         </div>
+      </div>
+    </section>
+
+    <section class="section steps-section" aria-labelledby="steps-title">
+      <div class="page-width">
+        <div class="center-heading reveal">
+          <p class="section-kicker">How it works</p>
+          <h2 id="steps-title">Three steps. One steady rhythm.</h2>
+          <p>Spend less time finding your way around and more time learning from each attempt.</p>
+        </div>
+        <div class="steps reveal-group">
+          <div class="steps-line" aria-hidden="true"><span></span></div>
+          <article class="step reveal" style="--i: 0"><span class="step-number">1</span><h3>Sign in</h3><p>Use the credentials provided by your instructor to enter your class space.</p></article>
+          <article class="step reveal" style="--i: 1"><span class="step-number">2</span><h3>Take assigned tests</h3><p>Complete the four timed modules and submit all 98 questions when ready.</p></article>
+          <article class="step reveal" style="--i: 2"><span class="step-number">3</span><h3>Review and grow</h3><p>Study your answers, follow score history, and track progress with your class.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section showcase-section" aria-labelledby="showcase-title">
+      <div class="page-width">
+        <div class="section-heading reveal">
+          <div><p class="section-kicker">Inside 4Prep</p><h2 id="showcase-title">A platform that keeps the next step visible.</h2></div>
+          <p>Explore the focused spaces students use to practice, review, and keep momentum.</p>
+        </div>
+
+        <div class="carousel reveal" id="platformCarousel" role="region" aria-roledescription="carousel" aria-label="4Prep platform areas" tabindex="0">
+          <div class="carousel-viewport">
+            <div class="carousel-track">
+              <article class="carousel-slide" data-label="Practice tests" aria-label="1 of 5: Practice tests">
+                <div class="slide-copy"><span>01 / Practice</span><h3>Practice tests</h3><p>Assigned tests keep every module, question, and timer organized in a clear testing flow.</p><div class="slide-tags"><b>98 questions</b><b>4 modules</b></div></div>
+                <div class="mock-panel test-ui" aria-hidden="true">
+                  <div class="mock-top"><span class="mock-logo">4P</span><b>Reading &amp; Writing</b><span class="mock-time">Timer</span></div>
+                  <div class="mock-body"><div class="mock-side"><b>Module 1</b><div class="bubble-grid"><i class="done">1</i><i class="done">2</i><i class="active">3</i><i>4</i><i>5</i><i>6</i><i>7</i><i>8</i></div></div><div class="mock-main"><span>Question 3</span><div class="copy-lines"><i></i><i></i><i></i><i></i></div><div class="mini-answers"><b><i>A</i><span></span></b><b><i>B</i><span></span></b><b><i>C</i><span></span></b></div></div></div>
+                </div>
+              </article>
+
+              <article class="carousel-slide" data-label="Answer review" aria-label="2 of 5: Answer review">
+                <div class="slide-copy"><span>02 / Understand</span><h3>Answer review</h3><p>Correct and incorrect answers are easy to scan, helping students turn mistakes into a useful study plan.</p><div class="slide-tags"><b>Clear feedback</b><b>Focused review</b></div></div>
+                <div class="mock-panel review-ui" aria-hidden="true">
+                  <div class="review-head"><div><small>Completed attempt</small><b>Answer review</b></div><span>Review</span></div>
+                  <div class="review-progress"><i></i></div>
+                  <div class="review-question"><small>Practice question</small><div class="copy-lines"><i></i><i></i></div><div class="review-answer wrong"><span>B</span><b>Your answer</b><em>×</em></div><div class="review-answer right"><span>D</span><b>Correct answer</b><em>✓</em></div></div>
+                </div>
+              </article>
+
+              <article class="carousel-slide" data-label="Leaderboard" aria-label="3 of 5: Leaderboard">
+                <div class="slide-copy"><span>03 / Compare</span><h3>Class leaderboard</h3><p>A class view adds context to progress while keeping the focus on consistent personal growth.</p><div class="slide-tags"><b>Class rank</b><b>Submitted scores</b></div></div>
+                <div class="mock-panel leaderboard-ui" aria-hidden="true">
+                  <div class="leader-title"><div><small>Your class</small><b>Leaderboard</b></div><span>Class</span></div>
+                  <div class="rank-row"><em>1</em><i class="avatar violet">S</i><b><span>Student</span><small>Submitted score</small></b><strong>✓</strong></div>
+                  <div class="rank-row current"><em>2</em><i class="avatar teal">YOU</i><b><span>Your progress</span><small>Submitted score</small></b><strong>✓</strong></div>
+                  <div class="rank-row"><em>3</em><i class="avatar amber">S</i><b><span>Student</span><small>Submitted score</small></b><strong>✓</strong></div>
+                </div>
+              </article>
+
+              <article class="carousel-slide" data-label="Vocabulary" aria-label="4 of 5: Vocabulary">
+                <div class="slide-copy"><span>04 / Build</span><h3>Vocabulary practice</h3><p>A dedicated space makes regular word practice simple enough to become part of the routine.</p><div class="slide-tags"><b>Focused sessions</b><b>Repeatable study</b></div></div>
+                <div class="mock-panel vocabulary-ui" aria-hidden="true">
+                  <div class="vocab-progress"><span>Vocabulary practice</span><b><i></i></b></div><div class="word-card"><small>Choose the best meaning</small><h4>Meticulous</h4><p>Showing great attention to detail</p><div><span>Need practice</span><strong>Got it <b>✓</b></strong></div></div>
+                </div>
+              </article>
+
+              <article class="carousel-slide" data-label="Question bank" aria-label="5 of 5: Question bank">
+                <div class="slide-copy"><span>05 / Explore</span><h3>Question bank</h3><p>Organized question sets give students another way to reinforce skills outside complete assigned tests.</p><div class="slide-tags"><b>Skill practice</b><b>Question sets</b></div></div>
+                <div class="mock-panel bank-ui" aria-hidden="true">
+                  <div class="bank-head"><div><small>Practice library</small><b>Question bank</b></div><span>Filter</span></div>
+                  <div class="bank-row"><i class="sky">RW</i><b><span>Reading &amp; Writing</span><small>Question set</small></b><em><span style="--p: 72%"></span></em></div>
+                  <div class="bank-row"><i class="violet">M</i><b><span>Math</span><small>Question set</small></b><em><span style="--p: 48%"></span></em></div>
+                  <div class="bank-row"><i class="amber">V</i><b><span>Vocabulary</span><small>Practice set</small></b><em><span style="--p: 86%"></span></em></div>
+                </div>
+              </article>
+            </div>
+          </div>
+          <button class="carousel-arrow carousel-prev" type="button" aria-label="Previous slide">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+          </button>
+          <button class="carousel-arrow carousel-next" type="button" aria-label="Next slide">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+          </button>
+          <div class="carousel-dots" aria-label="Choose a platform area"></div>
+          <p class="carousel-status sr-only" aria-live="polite" aria-atomic="true"></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta-band" aria-labelledby="cta-title">
+      <div class="cta-dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="cta-shine" aria-hidden="true"></div>
+      <div class="cta-inner page-width reveal">
+        <div><p class="section-kicker">Your next session is ready</p><h2 id="cta-title">Ready to continue?</h2><p>Sign in to practice, review answers, and keep building on your score history.</p></div>
+        <div class="cta-actions"><a class="btn btn-light" href="student-login.html">Student login <span aria-hidden="true">→</span></a><a class="btn btn-outline" href="admin-login.html">Admin login</a></div>
       </div>
     </section>
   </main>
 
-  <footer>
-    <div class="footer-inner">
-      <a class="brand-lockup" href="index.html" aria-label="4Prep home">
-        <fourprep-logo size="32" variant="white"></fourprep-logo>
-        <span>4Prep SAT Platform</span>
-      </a>
-      <div class="footer-links">
-        <a href="student-login.html">Student login</a>
-        <a href="admin-login.html">Admin login</a>
-      </div>
+  <footer class="site-footer">
+    <div class="footer-inner page-width">
+      <a class="brand-lockup" href="index.html" aria-label="4Prep home"><fourprep-logo size="36" variant="white"></fourprep-logo><span><b>4Prep</b><small>SAT Platform</small></span></a>
+      <p>Focused practice. Clear progress.</p>
+      <div class="footer-links"><a href="student-login.html">Student login</a><a href="admin-login.html">Admin login</a></div>
     </div>
+    <div class="footer-bottom page-width"><span>© 2026 4Prep SAT Platform</span><span>Practice with purpose.</span></div>
   </footer>
+
+  <script>
+    (() => {
+      const doc = document;
+      const root = doc.documentElement;
+      const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+      const finePointer = matchMedia('(pointer: fine) and (hover: hover)');
+      const header = doc.querySelector('#siteHeader');
+      const menuButton = doc.querySelector('.menu-toggle');
+      const menu = doc.querySelector('#mobileMenu');
+      const closeMenu = () => {
+        menuButton.setAttribute('aria-expanded', 'false');
+        menuButton.setAttribute('aria-label', 'Open navigation menu');
+        menu.classList.remove('is-open');
+      };
+
+      menuButton.addEventListener('click', () => {
+        const open = menuButton.getAttribute('aria-expanded') !== 'true';
+        menuButton.setAttribute('aria-expanded', String(open));
+        menuButton.setAttribute('aria-label', open ? 'Close navigation menu' : 'Open navigation menu');
+        menu.classList.toggle('is-open', open);
+      });
+      menu.querySelectorAll('a').forEach(link => link.addEventListener('click', closeMenu));
+      doc.addEventListener('keydown', event => {
+        if (event.key === 'Escape') closeMenu();
+      });
+
+      let scrollQueued = false;
+      const parallaxLayers = [...doc.querySelectorAll('[data-parallax]')];
+      const updateScroll = () => {
+        header.classList.toggle('is-scrolled', scrollY > 50);
+        if (!reduced.matches && finePointer.matches) {
+          parallaxLayers.forEach(layer => layer.style.setProperty('--parallax-y', `${scrollY * Number(layer.dataset.parallax)}px`));
+        }
+        scrollQueued = false;
+      };
+      addEventListener('scroll', () => {
+        if (!scrollQueued) {
+          scrollQueued = true;
+          requestAnimationFrame(updateScroll);
+        }
+      }, { passive: true });
+      updateScroll();
+
+      const reveals = [...doc.querySelectorAll('.reveal')];
+      const counts = [...doc.querySelectorAll('[data-count]')];
+      let counted = false;
+      const runCounts = () => {
+        if (counted) return;
+        counted = true;
+        counts.forEach(el => {
+          const end = Number(el.dataset.count);
+          if (reduced.matches) {
+            el.textContent = end.toLocaleString();
+            return;
+          }
+          const start = performance.now();
+          const tick = now => {
+            const progress = Math.min((now - start) / 1000, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            el.textContent = Math.round(end * eased).toLocaleString();
+            if (progress < 1) requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+        });
+      };
+
+      if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver(entries => {
+          entries.forEach(entry => {
+            if (!entry.isIntersecting) return;
+            entry.target.classList.add('in-view');
+            if (entry.target.closest('#stats')) runCounts();
+            observer.unobserve(entry.target);
+          });
+        }, { threshold: 0.15 });
+        reveals.forEach(item => observer.observe(item));
+      } else {
+        reveals.forEach(item => item.classList.add('in-view'));
+        runCounts();
+      }
+
+      const carousel = doc.querySelector('#platformCarousel');
+      const carouselViewport = carousel.querySelector('.carousel-viewport');
+      const track = carousel.querySelector('.carousel-track');
+      const originalSlides = [...track.children];
+      const dots = carousel.querySelector('.carousel-dots');
+      const status = carousel.querySelector('.carousel-status');
+      let index = 0;
+      let physical = 1;
+      let timer = 0;
+      let paused = false;
+      let locked = false;
+      let pointerStart = null;
+
+      const firstClone = originalSlides[0].cloneNode(true);
+      const lastClone = originalSlides.at(-1).cloneNode(true);
+      firstClone.setAttribute('aria-hidden', 'true');
+      lastClone.setAttribute('aria-hidden', 'true');
+      track.prepend(lastClone);
+      track.append(firstClone);
+      const slides = [...track.children];
+      originalSlides.forEach((slide, i) => {
+        const dot = doc.createElement('button');
+        dot.type = 'button';
+        dot.setAttribute('aria-label', `Show ${slide.dataset.label}`);
+        dot.addEventListener('click', () => goTo(i));
+        dots.append(dot);
+      });
+
+      const render = (animate = true, announce = true) => {
+        track.classList.toggle('no-transition', !animate);
+        track.style.transform = `translate3d(${-physical * 100}%, 0, 0)`;
+        slides.forEach((slide, i) => {
+          slide.classList.toggle('is-active', i === physical);
+          slide.setAttribute('aria-hidden', String(i !== physical));
+          if (i === physical) slide.removeAttribute('inert');
+          else slide.setAttribute('inert', '');
+        });
+        [...dots.children].forEach((dot, i) => {
+          dot.classList.toggle('is-active', i === index);
+          dot.setAttribute('aria-current', i === index ? 'true' : 'false');
+        });
+        if (announce) status.textContent = `${originalSlides[index].dataset.label}, slide ${index + 1} of ${originalSlides.length}`;
+      };
+      const restart = () => {
+        clearInterval(timer);
+        if (!reduced.matches && !paused) timer = setInterval(() => move(1), 5000);
+      };
+      const move = direction => {
+        if (locked) return;
+        locked = true;
+        index = (index + direction + originalSlides.length) % originalSlides.length;
+        physical += direction;
+        render(true);
+        restart();
+      };
+      const goTo = target => {
+        if (locked || target === index) return;
+        locked = true;
+        index = target;
+        physical = target + 1;
+        render(true);
+        restart();
+      };
+      track.addEventListener('transitionend', event => {
+        if (event.target !== track || event.propertyName !== 'transform') return;
+        if (physical === 0) physical = originalSlides.length;
+        if (physical === originalSlides.length + 1) physical = 1;
+        render(false, false);
+        requestAnimationFrame(() => track.classList.remove('no-transition'));
+        locked = false;
+      });
+      carousel.querySelector('.carousel-prev').addEventListener('click', () => move(-1));
+      carousel.querySelector('.carousel-next').addEventListener('click', () => move(1));
+      carousel.addEventListener('keydown', event => {
+        if (event.key === 'ArrowLeft') { event.preventDefault(); move(-1); }
+        if (event.key === 'ArrowRight') { event.preventDefault(); move(1); }
+      });
+      const setPaused = value => { paused = value; restart(); };
+      carousel.addEventListener('mouseenter', () => setPaused(true));
+      carousel.addEventListener('mouseleave', () => setPaused(false));
+      carousel.addEventListener('focusin', () => setPaused(true));
+      carousel.addEventListener('focusout', event => {
+        if (!carousel.contains(event.relatedTarget)) setPaused(false);
+      });
+      carouselViewport.addEventListener('pointerdown', event => {
+        pointerStart = { x: event.clientX, y: event.clientY, id: event.pointerId };
+        carouselViewport.setPointerCapture(event.pointerId);
+        setPaused(true);
+      });
+      carouselViewport.addEventListener('pointerup', event => {
+        if (!pointerStart || pointerStart.id !== event.pointerId) return;
+        const dx = event.clientX - pointerStart.x;
+        const dy = event.clientY - pointerStart.y;
+        if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy)) move(dx < 0 ? 1 : -1);
+        pointerStart = null;
+        setPaused(false);
+      });
+      carouselViewport.addEventListener('pointercancel', () => { pointerStart = null; setPaused(false); });
+      render(false, true);
+      restart();
+
+      const hero = doc.querySelector('.hero');
+      const heroCard = doc.querySelector('#heroCard');
+      let heroRect;
+      let tiltFrame = 0;
+      let targetX = 0, targetY = 0, currentX = 0, currentY = 0;
+      const cacheHero = () => { heroRect = hero.getBoundingClientRect(); };
+      const tiltTick = () => {
+        currentX += (targetX - currentX) * 0.1;
+        currentY += (targetY - currentY) * 0.1;
+        heroCard.style.transform = `rotateX(${currentX}deg) rotateY(${currentY}deg)`;
+        if (Math.abs(targetX - currentX) + Math.abs(targetY - currentY) > 0.02) tiltFrame = requestAnimationFrame(tiltTick);
+        else tiltFrame = 0;
+      };
+      const requestTilt = () => { if (!tiltFrame) tiltFrame = requestAnimationFrame(tiltTick); };
+      if (finePointer.matches && !reduced.matches) {
+        cacheHero();
+        addEventListener('resize', cacheHero, { passive: true });
+        hero.addEventListener('pointermove', event => {
+          const x = (event.clientX - heroRect.left) / heroRect.width;
+          const y = (event.clientY - heroRect.top) / heroRect.height;
+          targetX = (0.5 - y) * 20;
+          targetY = (x - 0.5) * 20;
+          heroCard.style.setProperty('--glare-x', `${x * 100}%`);
+          heroCard.style.setProperty('--glare-y', `${y * 100}%`);
+          requestTilt();
+        });
+        hero.addEventListener('pointerleave', () => { targetX = 0; targetY = 0; requestTilt(); });
+        doc.querySelectorAll('.feature-card').forEach(card => {
+          let rect;
+          card.addEventListener('pointerenter', () => { rect = card.getBoundingClientRect(); });
+          card.addEventListener('pointermove', event => {
+            if (!rect) rect = card.getBoundingClientRect();
+            const rx = ((rect.top + rect.height / 2 - event.clientY) / rect.height) * 8;
+            const ry = ((event.clientX - rect.left - rect.width / 2) / rect.width) * 8;
+            card.style.setProperty('--rx', `${rx}deg`);
+            card.style.setProperty('--ry', `${ry}deg`);
+          });
+          card.addEventListener('pointerleave', () => { card.style.setProperty('--rx', '0deg'); card.style.setProperty('--ry', '0deg'); });
+        });
+      }
+
+      addEventListener('pageshow', () => {
+        root.classList.add('js-anim');
+        header.classList.toggle('is-scrolled', scrollY > 50);
+        closeMenu();
+      });
+    })();
+  </script>
 </body>
 </html>
