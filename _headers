@@ -1,0 +1,9 @@
+# Cloudflare Pages/Workers static asset headers.
+# "no-cache" does NOT mean "don't cache" — browsers may store the file but
+# MUST revalidate with the server (ETag/304) before using it. This keeps
+# the site fast while guaranteeing that every deploy takes effect
+# immediately, instead of browsers running stale cached JS/CSS for days.
+/*
+  Cache-Control: no-cache
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin

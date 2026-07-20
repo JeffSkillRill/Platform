@@ -50,7 +50,7 @@
   }
 
   function formatTime(seconds) {
-    const total = Math.max(0, Number(seconds) || 0);
+    const total = Math.floor(Math.max(0, Number(seconds) || 0));
     const hours = Math.floor(total / 3600);
     const minutes = Math.floor((total % 3600) / 60);
     const secs = total % 60;
