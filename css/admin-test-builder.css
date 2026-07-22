@@ -437,13 +437,71 @@
 
     textarea { min-height: 80px; }
 
+    .math-authoring-only { display: none; }
+
+    .math-toolbar {
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.4rem;
+      margin-bottom: 0.55rem;
+    }
+    .math-toolbar span {
+      color: var(--text-muted);
+      font-size: 0.72rem;
+      font-weight: 600;
+      margin-right: 0.15rem;
+    }
+    .math-toolbar button {
+      background: var(--surface);
+      border: 1px solid var(--teal-mid);
+      border-radius: 6px;
+      color: var(--teal-darker);
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 600;
+      line-height: 1;
+      padding: 0.4rem 0.55rem;
+    }
+    .math-toolbar button:hover,
+    .math-toolbar button:focus-visible {
+      background: var(--teal-light);
+      border-color: var(--teal);
+      outline: none;
+    }
+
+    .math-preview {
+      background: #fff;
+      border: 1px solid var(--teal-mid);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 0.88rem;
+      line-height: 1.6;
+      margin-top: 0.45rem;
+      min-height: 2.45rem;
+      overflow-x: auto;
+      padding: 0.55rem 0.7rem;
+      white-space: pre-wrap;
+    }
+    .math-preview.is-empty::before {
+      color: var(--text-faint);
+      content: 'Math preview';
+      font-size: 0.72rem;
+    }
+    .choice-math-preview {
+      font-size: 0.8rem;
+      min-height: 2rem;
+      padding: 0.35rem 0.55rem;
+    }
+    .math-preview .katex-display { margin: 0.35rem 0; overflow-x: auto; overflow-y: hidden; }
+
     /* Answer choices */
     .choices-grid {
       display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem;
     }
 
     .choice-wrap {
-      display: flex; align-items: center; gap: 8px;
+      display: flex; align-items: flex-start; gap: 8px;
     }
 
     .choice-letter {
@@ -455,6 +513,7 @@
       flex-shrink: 0; cursor: pointer;
       border: 2px solid transparent;
       transition: background 0.12s, border-color 0.12s;
+      margin-top: 0.3rem;
     }
 
     .choice-wrap.correct .choice-letter {
@@ -515,7 +574,7 @@
     }
 
     /* Meta row */
-    .meta-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .meta-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; }
 
     /* Navigation bar at bottom of form */
     .form-nav {

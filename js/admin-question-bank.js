@@ -13,6 +13,7 @@
       <td><span class="tag yellow">${window.escapeHtml(q.difficulty || 'medium')}</span></td>
       <td><span class="tag blue">${window.escapeHtml((q.answer_type || 'mcq').toUpperCase())}</span></td>
     </tr>`).join('');
+    window.renderMathIn?.(tbody);
   }
 
   async function init() {

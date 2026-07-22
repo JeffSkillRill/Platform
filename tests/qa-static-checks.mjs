@@ -60,9 +60,30 @@ assert.match(createStudent, /body\.assign_existing_tests === true/,
 
 const builderHtml = await read('admin-test-builder.html');
 const builderJs = await read('js/admin-test-builder.js');
-for (const fieldId of ['qTopic', 'qExplanation']) {
-  assert.ok(builderHtml.includes(`id="${fieldId}"`), `builder must render ${fieldId}`);
-  assert.ok(builderJs.includes(`getElementById('${fieldId}')`), `builder must load and collect ${fieldId}`);
+assert.ok(!builderHtml.includes('id="qTopic"'), 'builder must not render the removed Topic field');
+assert.ok(!builderJs.includes("getElementById('qTopic')"), 'builder must not load or collect Topic');
+assert.ok(!/\btopic\s*:/.test(builderJs), 'builder must omit Topic from question persistence payloads');
+assert.ok(builderHtml.includes('id="qExplanation"'), 'builder must render qExplanation');
+assert.ok(builderJs.includes("getElementById('qExplanation')"), 'builder must load and collect qExplanation');
+assert.ok(builderHtml.includes('id="qAnswerTypeField"'), 'builder must wrap the Answer type field for module visibility');
+assert.match(builderJs, /MODULE_CONFIG\[key\]\?\.section === 'rw'/,
+  'builder must derive R&W behavior from MODULE_CONFIG');
+assert.match(builderJs, /answer_type:answerType[\s\S]*answer_text:answerType === 'spr'/,
+  'builder serialization must use its module-coerced answer type');
+assert.ok(builderHtml.includes('id="mathToolbar"'), 'builder must expose the math snippet toolbar');
+assert.ok(builderHtml.includes('id="stemMathPreview"'), 'builder must expose the live stem math preview');
+
+const mathRender = await read('js/math-render.js');
+assert.match(mathRender, /throwOnError: false/, 'shared math rendering must not throw on malformed LaTeX');
+assert.match(mathRender, /trust: false/, 'shared math rendering must keep KaTeX trust disabled');
+for (const renderer of [
+  'js/admin-question-bank.js',
+  'js/student-test-solve.js',
+  'js/student-practice.js',
+  'js/student-question-bank.js',
+  'js/student-test-results.js',
+]) {
+  assert.match(await read(renderer), /renderMathIn/, `${renderer} must render injected math content`);
 }
 
 const migration = await read('migrations/008-security-and-practice-hardening.sql');

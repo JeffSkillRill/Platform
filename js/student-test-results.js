@@ -140,6 +140,7 @@
       html += rows.map((row) => buildCard(row, reviewRows.indexOf(row) + 1)).join('');
     });
     list.innerHTML = html;
+    window.renderMathIn?.(list);
   }
 
   function buildCard(row, globalNum) {

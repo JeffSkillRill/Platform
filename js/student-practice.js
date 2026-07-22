@@ -119,6 +119,8 @@
         </div>
       </div>`;
 
+    window.renderMathIn?.(card);
+
     card.querySelectorAll('[data-choice]').forEach((button) => {
       button.addEventListener('click', () => {
         if (feedback) return;

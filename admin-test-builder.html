@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.17.0/dist/katex.min.css" crossorigin="anonymous">
   <link rel="stylesheet" href="css/admin-test-builder.css">
   <link rel="stylesheet" href="css/mobile.css?v=20260720-qa1">
   <meta name="theme-color" content="#3CDBBF">
@@ -216,16 +217,12 @@
                     <option value="hard">Hard</option>
                   </select>
                 </div>
-                <div class="field">
+                <div class="field" id="qAnswerTypeField">
                   <label class="field-label">Answer type</label>
                   <select id="qAnswerType" onchange="setAnswerType(this.value)">
                     <option value="mcq">Multiple choice</option>
                     <option value="spr">Student-produced response</option>
                   </select>
-                </div>
-                <div class="field">
-                  <label class="field-label" for="qTopic">Topic</label>
-                  <input type="text" id="qTopic" placeholder="e.g. Linear equations" maxlength="120" />
                 </div>
               </div>
             </div>
@@ -240,11 +237,25 @@
             <div class="form-card-body">
               <div class="field">
                 <label class="field-label">Question stem <span>(required)</span></label>
-                <textarea id="qStem" placeholder="Type the full question here. For math, you can use plain text — e.g. 'If 2x + 3 = 11, what is the value of x?'" rows="4"></textarea>
+                <div class="math-toolbar math-authoring-only" id="mathToolbar" aria-label="Insert math notation">
+                  <span>Insert math:</span>
+                  <button type="button" data-math-snippet="\frac{a}{b}">Fraction</button>
+                  <button type="button" data-math-snippet="x^{n}">xⁿ</button>
+                  <button type="button" data-math-snippet="\sqrt{x}">√x</button>
+                  <button type="button" data-math-snippet="\le">≤</button>
+                  <button type="button" data-math-snippet="\ge">≥</button>
+                  <button type="button" data-math-snippet="\ne">≠</button>
+                  <button type="button" data-math-snippet="\pi">π</button>
+                  <button type="button" data-math-snippet="\left|x\right|">|x|</button>
+                  <button type="button" data-math-snippet="x_{n}">xₙ</button>
+                </div>
+                <textarea id="qStem" placeholder="Type the full question here. For math, wrap LaTeX in $...$ — e.g. If $\frac{x}{4} + 3 = 7$, what is $x$?" rows="4"></textarea>
+                <div class="math-preview math-authoring-only" id="stemMathPreview" aria-live="polite"></div>
               </div>
               <div class="field" style="margin-top:1rem;">
                 <label class="field-label" for="qExplanation">Answer explanation <span>(optional)</span></label>
                 <textarea id="qExplanation" placeholder="Explain why the accepted answer is correct." rows="4"></textarea>
+                <div class="math-preview math-authoring-only" id="explanationMathPreview" aria-live="polite"></div>
               </div>
             </div>
           </div>
@@ -329,11 +340,14 @@
     <span id="toastMsg">Saved</span>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.17.0/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.17.0/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
   <script src="supabase-config.js"></script>
   <script src="js/shared.js"></script>
+  <script src="js/math-render.js"></script>
   <script src="js/auth-guard.js"></script>
   <script src="js/sat-config.js"></script>
-  <script src="js/admin-test-builder.js?v=20260720-qa2"></script>
+  <script src="js/admin-test-builder.js?v=20260722-math1"></script>
   <script src="js/mobile-nav.js?v=20260720-qa1" defer></script>
 </body>
 </html>

@@ -52,6 +52,28 @@
       return value ? new Date(value).toISOString() : null;
     }
 
+    function isRwModule(key) {
+      return MODULE_CONFIG[key]?.section === 'rw';
+    }
+
+    function normalizeQuestion(key, question) {
+      const normalized = Object.fromEntries(
+        Object.entries(question || {}).filter(([property]) => property !== 'topic')
+      );
+      normalized.module = key;
+      normalized.answerType = isRwModule(key)
+        ? 'mcq'
+        : normalized.answerType === 'spr' ? 'spr' : 'mcq';
+      return normalized;
+    }
+
+    function normalizeModuleQuestions() {
+      Object.keys(MODULE_CONFIG).forEach((key) => {
+        const questions = Array.isArray(moduleQuestions[key]) ? moduleQuestions[key] : [];
+        moduleQuestions[key] = questions.map((question) => normalizeQuestion(key, question));
+      });
+    }
+
     // ---- Load saved draft or existing DB test ----
     async function loadDraft() {
       classOptions = await window.satRest('classes?is_archived=eq.false&select=id,name&order=name.asc').catch(() => []);
@@ -85,12 +107,12 @@
             image: question.image_url || null,
             choices: window.parseJson(question.choices, ['', '', '', '']),
             correct: question.correct,
-            answerType: question.answer_type || 'mcq',
+            answerType: isRwModule(key) ? 'mcq' : question.answer_type || 'mcq',
             answerText: question.answer_text || '',
-            topic: question.topic || null,
             explanation: question.explanation || null,
           });
         });
+        normalizeModuleQuestions();
         return;
       }
 
@@ -102,6 +124,7 @@
         document.getElementById('dueDateInput').value = data.dueAt ? toDatetimeLocal(data.dueAt) : '';
         if (classSelect) classSelect.value = data.classId || '';
       }
+      normalizeModuleQuestions();
     }
 
     // ---- Save draft ----
@@ -109,6 +132,7 @@
       const name = document.getElementById('testNameInput').value.trim();
       if (!name) { showToast('Please enter a test name first.'); return; }
       if (currentQIndex !== null) collectCurrentForm();
+      if (!validateMathDelimiters()) return;
       const key = editingTestId ? `sat_draft_test_${editingTestId}` : 'sat_draft_test_new';
       localStorage.setItem(key, JSON.stringify({
         name,
@@ -140,6 +164,30 @@
       return tokens.length > 0 && tokens.every(isValidSprToken);
     }
 
+    function hasOddUnescapedDollars(value) {
+      const text = String(value || '');
+      let count = 0;
+      for (let i = 0; i < text.length; i += 1) {
+        if (text[i] !== '$') continue;
+        let backslashes = 0;
+        for (let j = i - 1; j >= 0 && text[j] === '\\'; j -= 1) backslashes += 1;
+        if (backslashes % 2 === 0) count += 1;
+      }
+      return count % 2 === 1;
+    }
+
+    function validateMathDelimiters() {
+      const invalid = Object.entries(moduleQuestions).some(([key, questions]) =>
+        questions.some((q) => {
+          if (hasOddUnescapedDollars(q.stem)) return true;
+          const answerType = isRwModule(key) ? 'mcq' : q.answerType || 'mcq';
+          return answerType === 'mcq' && Array.isArray(q.choices) && q.choices.some(hasOddUnescapedDollars);
+        })
+      );
+      if (invalid) showToast('Unclosed $ math delimiter');
+      return !invalid;
+    }
+
     // Update rows one PATCH each, in small parallel batches. The
     // authenticated role has a column-limited SELECT grant on questions
     // (answer fields are withheld), which blocks both upsert (ON CONFLICT)
@@ -158,13 +206,14 @@
       const name = document.getElementById('testNameInput').value.trim();
       if (!name) { showToast('Please enter a test name first.'); return; }
       if (currentQIndex !== null) collectCurrentForm();
+      if (!validateMathDelimiters()) return;
       const all = allQuestions();
       const dueAt = dueAtIso();
       const classId = document.getElementById('assignClassSelect')?.value || '';
       if (all.length === 0) { showToast('Add at least one question before publishing.'); return; }
 
       const incomplete = all.filter((q) => {
-        const type = q.answerType || 'mcq';
+        const type = isRwModule(q.module) ? 'mcq' : q.answerType || 'mcq';
         if (!q.stem.trim()) return true;
         if (type === 'spr') return !hasValidSprAnswers(q.answerText);
         return !Array.isArray(q.choices) || q.choices.some((c) => !c.trim()) || q.correct === null;
@@ -198,6 +247,9 @@
         Object.entries(moduleQuestions).forEach(([modKey, qs]) => {
           const cfg = MODULE_CONFIG[modKey];
           qs.forEach((q) => {
+            const answerType = cfg.section === 'rw'
+              ? 'mcq'
+              : q.answerType === 'spr' ? 'spr' : 'mcq';
             entries.push({
               q,
               finalOrder: orderNum++,
@@ -208,11 +260,10 @@
                 difficulty: q.difficulty,
                 stem:       q.stem,
                 image_url:  q.image || null,
-                choices:    (q.answerType || 'mcq') === 'spr' ? [] : q.choices,
-                correct:    (q.answerType || 'mcq') === 'spr' ? null : q.correct,
-                answer_type:(q.answerType || 'mcq'),
-                answer_text:(q.answerType || 'mcq') === 'spr' ? String(q.answerText || '').trim() : null,
-                topic:      q.topic || null,
+                choices:    answerType === 'spr' ? [] : q.choices,
+                correct:    answerType === 'spr' ? null : q.correct,
+                answer_type:answerType,
+                answer_text:answerType === 'spr' ? String(q.answerText || '').trim() : null,
                 explanation:q.explanation || null,
               },
             });
@@ -353,6 +404,8 @@
       if (currentQIndex !== null) collectCurrentForm();
       activeTab     = tab;
       currentQIndex = null;
+      normalizeModuleQuestions();
+      updateModuleSpecificUI();
 
       // Update tab styles
       Object.keys(MODULE_CONFIG).forEach(key => {
@@ -417,7 +470,6 @@
         correct:    null,
         answerType: 'mcq',
         answerText: '',
-        topic:      '',
         explanation:'',
       };
 
@@ -436,6 +488,8 @@
       currentQIndex = idx;
       correctAnswer = q.correct;
       const cfg     = MODULE_CONFIG[activeTab];
+      if (cfg.section === 'rw') q.answerType = 'mcq';
+      updateModuleSpecificUI();
 
       document.getElementById('emptyState').style.display   = 'none';
       document.getElementById('questionForm').style.display = 'block';
@@ -444,12 +498,11 @@
       document.getElementById('formHeadSub').textContent   = `${cfg.label} — ${cfg.time}`;
       document.getElementById('qModuleDisplay').textContent = cfg.label;
       document.getElementById('qDifficulty').value          = q.difficulty;
-      document.getElementById('qAnswerType').value          = q.answerType || 'mcq';
+      document.getElementById('qAnswerType').value          = cfg.section === 'rw' ? 'mcq' : q.answerType || 'mcq';
       document.getElementById('qAnswerText').value          = q.answerText || '';
-      document.getElementById('qTopic').value               = q.topic || '';
       document.getElementById('qExplanation').value         = q.explanation || '';
       document.getElementById('qStem').value                = q.stem;
-      updateAnswerTypeUI(q.answerType || 'mcq');
+      updateAnswerTypeUI(cfg.section === 'rw' ? 'mcq' : q.answerType || 'mcq');
 
       // Image
       const preview = document.getElementById('imgPreview');
@@ -462,6 +515,7 @@
       }
 
       renderChoices(q.choices || ['', '', '', ''], q.correct);
+      updateMathPreviews();
 
       // Nav counters
       const modQs = moduleQuestions[activeTab];
@@ -477,8 +531,29 @@
     }
 
     // ---- Answer type UI ----
+    function updateModuleSpecificUI() {
+      const isRw = isRwModule(activeTab);
+      const answerTypeField = document.getElementById('qAnswerTypeField');
+      if (answerTypeField) answerTypeField.style.display = isRw ? 'none' : '';
+      if (isRw) {
+        document.getElementById('qAnswerType').value = 'mcq';
+        document.getElementById('sprAnswersCard').style.display = 'none';
+        document.getElementById('choicesCard').style.display = 'block';
+      }
+
+      document.querySelectorAll('.math-authoring-only').forEach((element) => {
+        element.style.display = isRw ? 'none' : element.classList.contains('math-toolbar') ? 'flex' : 'block';
+      });
+
+      if (isRw && currentQIndex !== null) {
+        const q = moduleQuestions[activeTab][currentQIndex];
+        if (q) q.answerType = 'mcq';
+      }
+    }
+
     function updateAnswerTypeUI(type) {
-      const isSpr = type === 'spr';
+      const isRw = isRwModule(activeTab);
+      const isSpr = !isRw && type === 'spr';
       const choicesCard = document.getElementById('choicesCard');
       const sprCard = document.getElementById('sprAnswersCard');
       if (choicesCard) choicesCard.style.display = isSpr ? 'none' : 'block';
@@ -492,14 +567,16 @@
     }
 
     function setAnswerType(type) {
+      const normalizedType = isRwModule(activeTab) ? 'mcq' : type === 'spr' ? 'spr' : 'mcq';
       if (currentQIndex !== null) {
         const q = moduleQuestions[activeTab][currentQIndex];
         if (q) {
-          q.answerType = type === 'spr' ? 'spr' : 'mcq';
+          q.answerType = normalizedType;
           if (q.answerType === 'spr') q.correct = null;
         }
       }
-      updateAnswerTypeUI(type === 'spr' ? 'spr' : 'mcq');
+      document.getElementById('qAnswerType').value = normalizedType;
+      updateAnswerTypeUI(normalizedType);
       renderList();
     }
 
@@ -511,13 +588,86 @@
           <div class="choice-letter" onclick="setCorrect(${i})">${letter}</div>
           <div class="choice-input">
             <input type="text" id="choice${i}" placeholder="Choice ${letter}" value="${escHtml(choices[i]||'')}" />
+            <div class="math-preview choice-math-preview math-authoring-only" id="choiceMathPreview${i}" aria-live="polite"></div>
           </div>
         </div>`).join('');
+      updateModuleSpecificUI();
       updateCorrectHint(correct);
     }
 
     function escHtml(str) {
       return window.escapeHtml(str);
+    }
+
+    let previewTimer = null;
+
+    function renderMathPreview(element, source) {
+      if (!element) return;
+      const text = String(source || '');
+      element.textContent = text;
+      element.classList.toggle('is-empty', !text.trim());
+      if (text.trim()) window.renderMathIn?.(element);
+    }
+
+    function updateMathPreviews() {
+      if (isRwModule(activeTab)) return;
+      renderMathPreview(document.getElementById('stemMathPreview'), document.getElementById('qStem')?.value);
+      renderMathPreview(document.getElementById('explanationMathPreview'), document.getElementById('qExplanation')?.value);
+      LETTERS.forEach((_, index) => {
+        renderMathPreview(
+          document.getElementById(`choiceMathPreview${index}`),
+          document.getElementById(`choice${index}`)?.value
+        );
+      });
+    }
+
+    function scheduleMathPreview() {
+      window.clearTimeout(previewTimer);
+      previewTimer = window.setTimeout(updateMathPreviews, 300);
+    }
+
+    function isInsideMathDelimiter(value, position) {
+      const text = String(value || '').slice(0, position);
+      let mode = null;
+      for (let i = 0; i < text.length; i += 1) {
+        if (text[i] !== '$') continue;
+        let backslashes = 0;
+        for (let j = i - 1; j >= 0 && text[j] === '\\'; j -= 1) backslashes += 1;
+        if (backslashes % 2 === 1) continue;
+
+        if (text[i + 1] === '$') {
+          if (mode === 'display') mode = null;
+          else if (mode === null) mode = 'display';
+          i += 1;
+        } else if (mode === 'inline') {
+          mode = null;
+        } else if (mode === null) {
+          mode = 'inline';
+        }
+      }
+      return mode !== null;
+    }
+
+    function insertMathSnippet(snippet) {
+      const textarea = document.getElementById('qStem');
+      if (!textarea || isRwModule(activeTab)) return;
+      const start = textarea.selectionStart ?? textarea.value.length;
+      const end = textarea.selectionEnd ?? start;
+      const insertion = isInsideMathDelimiter(textarea.value, start) ? snippet : `$${snippet}$`;
+      textarea.setRangeText(insertion, start, end, 'end');
+      textarea.focus();
+      textarea.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    function initMathAuthoring() {
+      document.getElementById('qStem')?.addEventListener('input', scheduleMathPreview);
+      document.getElementById('qExplanation')?.addEventListener('input', scheduleMathPreview);
+      document.getElementById('choicesGrid')?.addEventListener('input', (event) => {
+        if (event.target.matches('input[id^="choice"]')) scheduleMathPreview();
+      });
+      document.querySelectorAll('[data-math-snippet]').forEach((button) => {
+        button.addEventListener('click', () => insertMathSnippet(button.dataset.mathSnippet || ''));
+      });
     }
 
     function setCorrect(idx) {
@@ -545,10 +695,11 @@
       const q = moduleQuestions[activeTab][currentQIndex];
       if (!q) return;
       q.difficulty = document.getElementById('qDifficulty').value;
-      q.answerType = document.getElementById('qAnswerType').value === 'spr' ? 'spr' : 'mcq';
+      q.answerType = isRwModule(activeTab)
+        ? 'mcq'
+        : document.getElementById('qAnswerType').value === 'spr' ? 'spr' : 'mcq';
       q.stem       = document.getElementById('qStem').value;
       q.answerText = document.getElementById('qAnswerText').value || '';
-      q.topic      = document.getElementById('qTopic').value.trim() || null;
       q.explanation = document.getElementById('qExplanation').value.trim() || null;
       q.correct    = q.answerType === 'spr' ? null : correctAnswer;
       q.choices    = LETTERS.map((_,i) => document.getElementById('choice'+i)?.value || '');
@@ -557,6 +708,7 @@
     // ---- Navigate within module ----
     function saveAndNext() {
       collectCurrentForm();
+      if (!validateMathDelimiters()) return;
       renderList();
       const modQs = moduleQuestions[activeTab];
       if (currentQIndex < modQs.length - 1) {
@@ -655,7 +807,7 @@
           <div class="q-chip ${isActive?'active':''}" onclick="selectQuestion(${i})" data-qid="${q.id}">
             <div class="q-num">${i+1}</div>
             <div class="q-chip-text">${window.escapeHtml(preview)}</div>
-            <span class="q-type">${(q.answerType || 'mcq').toUpperCase()}</span>
+            <span class="q-type">${(isRwModule(activeTab) ? 'mcq' : q.answerType || 'mcq').toUpperCase()}</span>
             <span class="q-diff ${window.escapeHtml(q.difficulty)}">${window.escapeHtml(q.difficulty[0].toUpperCase())}</span>
             <button class="q-delete" onclick="event.stopPropagation();deleteQuestion(${i})" title="Delete">
               <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -746,6 +898,7 @@
 
     // ---- Init ----
     async function init() {
+      initMathAuthoring();
       context = await window.SAT_AUTH_READY;
       if (!context) return;
       try {

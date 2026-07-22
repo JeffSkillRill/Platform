@@ -121,7 +121,8 @@
           ? `Choice ${LETTERS[feedback.correct]}`
           : '—'
       : '';
-    document.getElementById('bankApp').innerHTML = `
+    const bankApp = document.getElementById('bankApp');
+    bankApp.innerHTML = `
       <section class="card session-card">
         <div class="tag blue">Question ${currentIndex + 1} of ${sessionQuestions.length}</div>
         ${imageUrl ? `<img class="q-image" src="${window.escapeHtml(imageUrl)}" alt="Question illustration for this prompt">` : ''}
@@ -134,6 +135,7 @@
           ${feedback ? `<button class="btn btn-primary" id="nextBankBtn">${currentIndex === sessionQuestions.length - 1 ? 'Summary' : 'Next'}</button>` : '<button class="btn btn-primary" id="checkBankBtn">Check</button>'}
         </div>
       </section>`;
+    window.renderMathIn?.(bankApp);
     document.querySelectorAll('[data-choice]').forEach((button) => button.addEventListener('click', () => { selected = Number(button.dataset.choice); renderQuestion(); }));
     document.getElementById('bankSprInput')?.addEventListener('input', (event) => { selectedText = event.target.value.replace(/[^0-9./-]/g, '').replace(/(?!^)-/g, '').slice(0, 5); event.target.value = selectedText; });
     document.getElementById('backToBankBtn').addEventListener('click', exitSession);
