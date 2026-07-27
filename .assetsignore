@@ -1,2 +1,42 @@
+# Files here are NOT deployed.
+#
+# The Cloudflare deploy directory is the repo root ("assets.directory": "."
+# in wrangler.jsonc), so anything committed at the root is fetchable by
+# anyone who guesses the path — including logged-out students. Everything
+# below is either secret, or simply not part of the site.
+
 # Source artwork is retained for regeneration but must never be deployed.
 logo/
+
+# Answer keys. The seed files embed the `correct` index and the SPR
+# accepted-answer strings for every question in plaintext, so serving them
+# would hand out a complete answer key for the seeded practice tests.
+*.sql
+migrations/
+supabase/
+
+# Extracted question banks and cropped figures produced by the PDF import
+# workflow. Same problem: they contain correct answers.
+imports/
+figures/
+
+# Tooling and tests are not part of the site.
+tests/
+tools/
+node_modules/
+
+# Internal working notes, QA reports and superseded designs.
+CODEX-*.md
+*.docx
+docs/legacy/
+docs/qa-*
+docs/platform-qa-*
+docs/weekly-reports/
+docs/deploy-*
+
+# Repo and editor config.
+.claude/
+.qa-harness/
+.gitignore
+.assetsignore
+wrangler.jsonc

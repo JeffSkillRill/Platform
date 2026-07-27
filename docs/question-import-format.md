@@ -9,6 +9,17 @@ validation and write path as a hand-built test.
 
 ## Workflow
 
+0. Validate before pasting. `tools/validate-import.mjs` runs the exact rules the
+   Import modal runs, so anything it passes will import cleanly:
+
+   ```sh
+   node tools/validate-import.mjs import-rw1.json
+   node tools/validate-import.mjs imports/practice-test-b/   # whole folder
+   ```
+
+   When several PDFs are being processed, keep one folder per test under `imports/`
+   so files never overwrite each other and cap checks stay scoped to one test.
+
 1. Extract question text from the PDF (Codex, OCR, whatever works) into the JSON below.
 2. If the questions have figures, run the figure pipeline first — see [Figures](#figures) — and put the returned URLs in `image_url`.
 3. Paste into the Import modal and click **Check**. Errors are reported per question with its position in your file.

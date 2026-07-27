@@ -98,10 +98,11 @@ still go through the normal **Publish test** path.
 Figures are handled separately by `tools/pdf_figures.py`, which crops them out
 of a (watermarked) PDF and uploads them to the `question-images` bucket.
 
-Validate files before pasting them:
+Validate files before pasting them. A directory argument checks every `.json`
+inside it, so keep one folder per test when importing several PDFs:
 
 ```sh
-node tools/validate-import.mjs import-rw1.json import-rw2.json import-math1.json import-math2.json
+node tools/validate-import.mjs imports/practice-test-b/
 ```
 
 - [docs/question-import-format.md](docs/question-import-format.md) — schema, rules, figure workflow

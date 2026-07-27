@@ -3,7 +3,10 @@
 // Validate question import files before they are pasted into the builder.
 //
 //   node tools/validate-import.mjs import-rw1.json
+//   node tools/validate-import.mjs imports/practice-test-b/
 //   node tools/validate-import.mjs import-*.json
+//
+// A directory argument expands to the .json files directly inside it.
 //
 // Runs the exact rules the Import modal runs, so a file that passes here
 // will import cleanly. Intended to be run in a loop by whatever produced
@@ -17,18 +20,40 @@
 // contribute questions to the same module.
 
 import { createRequire } from 'node:module';
-import { readFileSync } from 'node:fs';
-import { basename } from 'node:path';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { basename, dirname, join } from 'node:path';
 
 const require = createRequire(import.meta.url);
 const { parseAndValidate, MODULES } = require('../js/question-import.js');
 
 const args = process.argv.slice(2);
 const combined = args.includes('--combined');
-const paths = args.filter((arg) => !arg.startsWith('--'));
+const given = args.filter((arg) => !arg.startsWith('--'));
+
+if (given.length === 0) {
+  console.error('Usage: node tools/validate-import.mjs <file.json|directory> [more ...] [--combined]');
+  process.exit(2);
+}
+
+// A directory expands to the .json files directly inside it, so a whole
+// test's worth of per-module files can be checked by naming its folder.
+// Sorted, so the report order is stable run to run.
+const paths = given.flatMap((path) => {
+  let stats;
+  try {
+    stats = statSync(path);
+  } catch {
+    return [path]; // reported as a missing file below
+  }
+  if (!stats.isDirectory()) return [path];
+  return readdirSync(path)
+    .filter((name) => name.endsWith('.json'))
+    .sort()
+    .map((name) => join(path, name));
+});
 
 if (paths.length === 0) {
-  console.error('Usage: node tools/validate-import.mjs <file.json> [more.json ...] [--combined]');
+  console.error('No .json files found in the given directory.');
   process.exit(2);
 }
 
@@ -42,16 +67,23 @@ const GREEN = paint(32);
 const DIM = paint(2);
 const OFF = paint(0);
 
-function report(label, result) {
+// Per-test folders mean several files share the name "import-rw1.json",
+// so keep the parent folder in the label when there is one.
+function label(path) {
+  const parent = basename(dirname(path));
+  return parent && parent !== '.' ? join(parent, basename(path)) : basename(path);
+}
+
+function report(name, result) {
   const counts = Object.entries(result.byModule)
     .filter(([, n]) => n > 0)
     .map(([key, n]) => `${key}:${n}`)
     .join(' ');
 
   if (result.ok) {
-    console.log(`${GREEN}PASS${OFF} ${label} ${DIM}${result.questions.length} question(s)  ${counts}${OFF}`);
+    console.log(`${GREEN}PASS${OFF} ${name} ${DIM}${result.questions.length} question(s)  ${counts}${OFF}`);
   } else {
-    console.log(`${RED}FAIL${OFF} ${label} ${DIM}${result.errors.length} error(s)${OFF}`);
+    console.log(`${RED}FAIL${OFF} ${name} ${DIM}${result.errors.length} error(s)${OFF}`);
     for (const error of result.errors) console.log(`       ${RED}·${OFF} ${error}`);
   }
   for (const warning of result.warnings) {
@@ -67,7 +99,7 @@ for (const path of paths) {
   try {
     text = readFileSync(path, 'utf8');
   } catch (err) {
-    console.log(`${RED}FAIL${OFF} ${basename(path)} ${DIM}${err.code === 'ENOENT' ? 'file not found' : err.message}${OFF}`);
+    console.log(`${RED}FAIL${OFF} ${label(path)} ${DIM}${err.code === 'ENOENT' ? 'file not found' : err.message}${OFF}`);
     failed += 1;
     continue;
   }
@@ -77,7 +109,7 @@ for (const path of paths) {
     // A parse failure has no questions to contribute, so report it now
     // rather than letting it vanish into the combined batch.
     if (!parsed.ok && parsed.questions.length === 0) {
-      report(basename(path), parsed);
+      report(label(path), parsed);
       failed += 1;
       continue;
     }
@@ -86,7 +118,7 @@ for (const path of paths) {
   }
 
   const result = parseAndValidate(text);
-  report(basename(path), result);
+  report(label(path), result);
   if (!result.ok) failed += 1;
 }
 

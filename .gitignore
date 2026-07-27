@@ -4,6 +4,12 @@ Keys.txt
 .env.*
 node_modules/
 
+# PDF import working files: extracted question banks (which contain the
+# correct answers) and cropped figures. Both are usually third-party test
+# content, and both are redundant once imported and published.
+imports/
+figures/
+
 # wrangler files
 .wrangler
 .dev.vars*

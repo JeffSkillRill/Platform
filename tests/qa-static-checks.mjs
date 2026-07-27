@@ -97,6 +97,43 @@ for (const requiredFragment of [
   assert.ok(migration.includes(requiredFragment), `migration 008 is missing ${requiredFragment}`);
 }
 
+// ---- Deployment surface ----
+// wrangler.jsonc sets "assets": { "directory": "." }, so every file at the
+// repo root is publicly fetchable unless .assetsignore excludes it. The seed
+// and schema SQL embed the `correct` index and SPR accepted answers for every
+// question, so serving them would publish a complete answer key.
+const assetsIgnore = await read('.assetsignore');
+const ignorePatterns = assetsIgnore
+  .split('\n')
+  .map((line) => line.trim())
+  .filter((line) => line && !line.startsWith('#'));
+
+// Minimal gitignore-style matcher covering the forms used in .assetsignore:
+// "dir/" prefixes and "*.ext" / "PREFIX-*.md" globs.
+function isNotDeployed(path) {
+  return ignorePatterns.some((pattern) => {
+    if (pattern.endsWith('/')) return path === pattern.slice(0, -1) || path.startsWith(pattern);
+    const regex = new RegExp(`^${pattern.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '[^/]*')}$`);
+    if (regex.test(path)) return true;
+    // A bare pattern with no slash matches at any depth, as in gitignore.
+    return !pattern.includes('/') && regex.test(path.split('/').pop());
+  });
+}
+
+for (const secret of [
+  'schema.sql',
+  'seed-demo-test.sql',
+  'seed-practice-test-A.sql',
+  'seed-practice-test-A-spr-gridin.sql',
+  'migrations/008-security-and-practice-hardening.sql',
+  'docs/legacy/schema-legacy.sql',
+  'imports/anything.json',
+  'figures/manifest.json',
+]) {
+  assert.ok(isNotDeployed(secret),
+    `.assetsignore must keep ${secret} out of the public deploy — it contains answer data`);
+}
+
 const htmlFiles = (await readdir(root)).filter((name) => name.endsWith('.html'));
 for (const htmlFile of htmlFiles) {
   const html = await read(htmlFile);
@@ -111,6 +148,10 @@ for (const htmlFile of htmlFiles) {
     if (!reference || /^(?:https?:|data:|mailto:|tel:)/.test(reference)) continue;
     await assert.doesNotReject(access(new URL(reference, root)),
       `${htmlFile} references missing local file ${reference}`);
+    // A page that links to an asset-ignored file renders a 404 in production
+    // even though the file exists locally.
+    assert.ok(!isNotDeployed(reference),
+      `${htmlFile} links to ${reference}, which .assetsignore excludes from the deploy`);
   }
 }
 
