@@ -647,4 +647,149 @@
       .choices-grid { grid-template-columns: 1fr; }
     }
 
+    /* ===== BULK IMPORT MODAL ===== */
+    .import-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(13, 33, 55, 0.45);
+      z-index: 900;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+    .import-overlay.open { display: flex; }
+
+    .import-modal {
+      background: var(--surface);
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      box-shadow: 0 24px 60px rgba(13, 33, 55, 0.28);
+      width: 100%;
+      max-width: 780px;
+      max-height: 88vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .import-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1.1rem 1.35rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--teal-light);
+    }
+    .import-head h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--navy);
+    }
+    .import-head p {
+      margin-top: 0.25rem;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      max-width: 56ch;
+    }
+    .import-close {
+      border: none;
+      background: none;
+      font-size: 1.5rem;
+      line-height: 1;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 0 0.25rem;
+    }
+    .import-close:hover { color: var(--navy); }
+
+    .import-body {
+      padding: 1.1rem 1.35rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    .import-mode {
+      display: flex;
+      align-items: center;
+      gap: 1.1rem;
+      flex-wrap: wrap;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+    .import-mode label {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .import-help {
+      margin-left: auto;
+      color: var(--teal-darker);
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .import-help:hover { text-decoration: underline; }
+
+    #importInput {
+      width: 100%;
+      min-height: 260px;
+      resize: vertical;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.76rem;
+      line-height: 1.5;
+      padding: 0.8rem 0.9rem;
+      border: 1.5px solid var(--border);
+      border-radius: 9px;
+      background: var(--bg);
+      color: var(--text);
+    }
+    #importInput:focus {
+      outline: none;
+      border-color: var(--teal);
+      background: var(--surface);
+    }
+
+    .import-report { display: none; flex-direction: column; gap: 0.5rem; }
+    .import-report.show { display: flex; }
+
+    .import-msg {
+      border-radius: 9px;
+      padding: 0.7rem 0.85rem;
+      font-size: 0.76rem;
+      line-height: 1.55;
+      border: 1px solid transparent;
+    }
+    .import-msg.ok    { background: var(--green-light); color: var(--green);  border-color: #a7f3d0; }
+    .import-msg.warn  { background: var(--amber-light); color: var(--amber);  border-color: #fcd34d; }
+    .import-msg.error { background: var(--red-light);   color: var(--red);    border-color: #fca5a5; }
+    .import-msg strong { display: block; margin-bottom: 0.3rem; font-weight: 700; }
+    .import-msg ul { margin: 0; padding-left: 1.1rem; }
+    .import-msg li { margin-top: 0.2rem; }
+
+    .import-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.9rem 1.35rem;
+      border-top: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .import-count { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; }
+    .import-actions { display: flex; gap: 0.5rem; margin-left: auto; }
+    #importApplyBtn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    @media (max-width: 768px) {
+      .import-overlay { padding: 0.75rem; }
+      .import-modal { max-height: 94vh; }
+      .import-foot { flex-wrap: wrap; }
+      .import-actions { width: 100%; justify-content: flex-end; }
+    }
+
     @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }

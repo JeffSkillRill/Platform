@@ -90,6 +90,10 @@
         <option value="">Assign to all students</option>
       </select>
       <div class="topbar-right">
+        <button class="btn btn-outline" onclick="openImportModal()" id="importQBtn" title="Paste extracted questions as JSON">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg>
+          Import
+        </button>
         <button class="btn btn-outline" onclick="saveDraft()">
           <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
           Save draft
@@ -334,6 +338,51 @@
     </div>
   </div>
 
+  <!-- Bulk import -->
+  <div class="import-overlay" id="importOverlay" role="dialog" aria-modal="true" aria-labelledby="importTitle">
+    <div class="import-modal">
+      <div class="import-head">
+        <div>
+          <h2 id="importTitle">Import questions</h2>
+          <p>Paste JSON from your extractor. Questions load into the builder for review — nothing is published until you click Publish test.</p>
+        </div>
+        <button class="import-close" onclick="closeImportModal()" aria-label="Close">&times;</button>
+      </div>
+
+      <div class="import-body">
+        <div class="import-mode">
+          <label><input type="radio" name="importMode" value="append" checked/> Add to existing questions</label>
+          <label><input type="radio" name="importMode" value="replace"/> Replace all questions</label>
+          <a href="docs/question-import-format.md" target="_blank" rel="noopener" class="import-help">Format reference</a>
+        </div>
+
+        <textarea id="importInput" spellcheck="false" placeholder='{
+  "questions": [
+    {
+      "module": "rw1",
+      "difficulty": "easy",
+      "stem": "Which choice completes the text with the most logical word?",
+      "choices": ["indifferent", "accessible", "identical", "resistant"],
+      "correct": "B",
+      "explanation": "The colon introduces features that make the room usable by everyone."
+    }
+  ]
+}'></textarea>
+
+        <div class="import-report" id="importReport"></div>
+      </div>
+
+      <div class="import-foot">
+        <span class="import-count" id="importCount"></span>
+        <div class="import-actions">
+          <button class="btn btn-outline" onclick="closeImportModal()">Cancel</button>
+          <button class="btn btn-outline" onclick="checkImport()" id="importCheckBtn">Check</button>
+          <button class="btn btn-primary" onclick="applyImport()" id="importApplyBtn" disabled>Import</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast -->
   <div class="toast" id="toast">
     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
@@ -347,7 +396,8 @@
   <script src="js/math-render.js"></script>
   <script src="js/auth-guard.js"></script>
   <script src="js/sat-config.js"></script>
-  <script src="js/admin-test-builder.js?v=20260722-math1"></script>
+  <script src="js/question-import.js?v=20260722-import1"></script>
+  <script src="js/admin-test-builder.js?v=20260722-import1"></script>
   <script src="js/mobile-nav.js?v=20260720-qa1" defer></script>
 </body>
 </html>

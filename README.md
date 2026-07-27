@@ -88,6 +88,25 @@ Use `theme-aware` on logos that sit on a theme-changing surface. It resolves to 
 
 Student and admin portal pages load a persistent light/dark theme switch. The selected theme is shared across portal pages in the browser.
 
+## Bulk Question Import
+
+The test builder accepts pasted JSON so questions extracted from a PDF do not
+have to be typed one at a time. Click **Import** in `admin-test-builder.html`,
+paste, **Check**, then **Import**. Questions land in the builder for review and
+still go through the normal **Publish test** path.
+
+Figures are handled separately by `tools/pdf_figures.py`, which crops them out
+of a (watermarked) PDF and uploads them to the `question-images` bucket.
+
+Validate files before pasting them:
+
+```sh
+node tools/validate-import.mjs import-rw1.json import-rw2.json import-math1.json import-math2.json
+```
+
+- [docs/question-import-format.md](docs/question-import-format.md) — schema, rules, figure workflow
+- [docs/codex-extraction-prompt.md](docs/codex-extraction-prompt.md) — ready-to-paste prompt for extracting a PDF
+
 ## Manual Test Checklist
 
 - Phase 1: start a test, eliminate choices, hide timer, change text size, use keyboard shortcuts, refresh, and confirm the same state returns. In a Math module, open Calculator and Reference; confirm those buttons are hidden in R&W.
@@ -95,6 +114,14 @@ Student and admin portal pages load a persistent light/dark theme switch. The se
 - Phase 2: submit a test and open results; confirm per-question time, slow-question labels, topic bars, and difficulty bars render. Open Practice and confirm missed questions appear without answers until Check.
 - Phase 3: confirm Home shows trend, streak, badges, target goal, and due-date badges. Open `student-leaderboard.html?testId=TEST_ID` and confirm that test is preselected.
 - Phase 4: use the sidebar Dark mode toggle, check student pages at mobile width, and use Download report on a result page to open the print view.
+- Import: open the builder, click Import, paste a batch containing one bad question, and confirm Check reports it by position and leaves Import disabled. Fix it, import in append mode, confirm the module counts rise, then publish and solve the test as a student.
+
+Automated checks:
+
+```sh
+node tests/qa-static-checks.mjs
+node tests/question-import.test.mjs
+```
 
 ## Security Notes
 

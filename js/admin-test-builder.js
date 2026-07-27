@@ -164,28 +164,33 @@
       return tokens.length > 0 && tokens.every(isValidSprToken);
     }
 
-    function hasOddUnescapedDollars(value) {
-      const text = String(value || '');
-      let count = 0;
-      for (let i = 0; i < text.length; i += 1) {
-        if (text[i] !== '$') continue;
-        let backslashes = 0;
-        for (let j = i - 1; j >= 0 && text[j] === '\\'; j -= 1) backslashes += 1;
-        if (backslashes % 2 === 0) count += 1;
-      }
-      return count % 2 === 1;
+    // Shared with the importer so publish and import enforce identical
+    // rules. This deliberately counts a backslash-escaped "$" as a
+    // delimiter, because KaTeX auto-render does: a "\$" outside math mode
+    // opens a math span and swallows the prose up to the next "$".
+    function mathProblem(value) {
+      return window.satQuestionImport.mathDelimiterProblem(value);
     }
 
     function validateMathDelimiters() {
-      const invalid = Object.entries(moduleQuestions).some(([key, questions]) =>
-        questions.some((q) => {
-          if (hasOddUnescapedDollars(q.stem)) return true;
+      let problem = null;
+      Object.entries(moduleQuestions).forEach(([key, questions]) => {
+        questions.forEach((q, index) => {
+          if (problem) return;
+          const where = `${MODULE_CONFIG[key].label} Q${index + 1}`;
+          const stem = mathProblem(q.stem);
+          if (stem) { problem = `${where}: ${stem}`; return; }
           const answerType = isRwModule(key) ? 'mcq' : q.answerType || 'mcq';
-          return answerType === 'mcq' && Array.isArray(q.choices) && q.choices.some(hasOddUnescapedDollars);
-        })
-      );
-      if (invalid) showToast('Unclosed $ math delimiter');
-      return !invalid;
+          if (answerType !== 'mcq' || !Array.isArray(q.choices)) return;
+          q.choices.forEach((choice, i) => {
+            if (problem) return;
+            const found = mathProblem(choice);
+            if (found) problem = `${where} choice ${LETTERS[i]}: ${found}`;
+          });
+        });
+      });
+      if (problem) showToast(problem);
+      return !problem;
     }
 
     // Update rows one PATCH each, in small parallel batches. The
@@ -889,6 +894,129 @@
       document.getElementById('imgInput').value = '';
     }
 
+    // ================================================================
+    // BULK IMPORT
+    // Parsing and validation live in js/question-import.js so the same
+    // rules can be tested headlessly. This half only moves validated
+    // questions into moduleQuestions — publish is untouched, so an
+    // imported test goes through exactly the same write path as a
+    // hand-built one.
+    // ================================================================
+    let importResult = null;
+
+    function importModuleCounts() {
+      return Object.fromEntries(
+        Object.keys(MODULE_CONFIG).map((key) => [key, moduleQuestions[key].length])
+      );
+    }
+
+    function importMode() {
+      const checked = document.querySelector('input[name="importMode"]:checked');
+      return checked ? checked.value : 'append';
+    }
+
+    function openImportModal() {
+      if (currentQIndex !== null) collectCurrentForm();
+      importResult = null;
+      document.getElementById('importReport').className = 'import-report';
+      document.getElementById('importCount').textContent = '';
+      document.getElementById('importApplyBtn').disabled = true;
+      document.getElementById('importOverlay').classList.add('open');
+      document.getElementById('importInput').focus();
+    }
+
+    function closeImportModal() {
+      document.getElementById('importOverlay').classList.remove('open');
+    }
+
+    function renderImportReport(result) {
+      const report = document.getElementById('importReport');
+      const blocks = [];
+
+      if (result.errors.length) {
+        blocks.push(
+          `<div class="import-msg error"><strong>${result.errors.length} problem${result.errors.length === 1 ? '' : 's'} — nothing imported</strong>` +
+          `<ul>${result.errors.map((e) => `<li>${window.escapeHtml(e)}</li>`).join('')}</ul></div>`
+        );
+      }
+      if (result.warnings.length) {
+        blocks.push(
+          `<div class="import-msg warn"><strong>${result.warnings.length} warning${result.warnings.length === 1 ? '' : 's'} — imported with changes</strong>` +
+          `<ul>${result.warnings.map((w) => `<li>${window.escapeHtml(w)}</li>`).join('')}</ul></div>`
+        );
+      }
+      if (result.ok) {
+        const breakdown = Object.entries(result.byModule)
+          .filter(([, count]) => count > 0)
+          .map(([key, count]) => `${MODULE_CONFIG[key].label}: ${count}`)
+          .join(' · ');
+        blocks.push(
+          `<div class="import-msg ok"><strong>${result.questions.length} question${result.questions.length === 1 ? '' : 's'} ready to import</strong>${window.escapeHtml(breakdown)}</div>`
+        );
+      }
+
+      report.innerHTML = blocks.join('');
+      report.className = blocks.length ? 'import-report show' : 'import-report';
+    }
+
+    function checkImport() {
+      const text = document.getElementById('importInput').value;
+      // In replace mode the current questions are going away, so they
+      // must not count toward the module caps.
+      const existingCounts = importMode() === 'replace' ? {} : importModuleCounts();
+      importResult = window.satQuestionImport.parseAndValidate(text, { existingCounts });
+
+      renderImportReport(importResult);
+      document.getElementById('importApplyBtn').disabled = !importResult.ok;
+      document.getElementById('importCount').textContent = importResult.ok
+        ? `${importResult.questions.length} question(s) validated`
+        : '';
+      return importResult;
+    }
+
+    function applyImport() {
+      const result = (importResult && importResult.ok) ? importResult : checkImport();
+      if (!result.ok) return;
+
+      if (importMode() === 'replace') {
+        moduleQuestions = { rw1: [], rw2: [], math1: [], math2: [] };
+      }
+
+      result.questions.forEach((q) => {
+        moduleQuestions[q.module].push({
+          id: q.id,
+          module: q.module,
+          difficulty: q.difficulty,
+          stem: q.stem,
+          image: q.image,
+          choices: q.choices,
+          correct: q.correct,
+          answerType: q.answerType,
+          answerText: q.answerText,
+          explanation: q.explanation,
+        });
+      });
+
+      // Adopt the payload's test name only when the field is still blank,
+      // so an import never silently renames a test being edited.
+      const nameInput = document.getElementById('testNameInput');
+      if (result.testName && nameInput && !nameInput.value.trim()) {
+        nameInput.value = result.testName;
+      }
+
+      normalizeModuleQuestions();
+      currentQIndex = null;
+      closeImportModal();
+      document.getElementById('importInput').value = '';
+      importResult = null;
+
+      // Land the user on a module that actually received questions.
+      const firstFilled = Object.keys(MODULE_CONFIG).find((key) => moduleQuestions[key].length > 0);
+      switchTab(firstFilled || activeTab);
+      updateEstimator();
+      showToast(`${result.questions.length} question(s) imported — review, then Publish ✓`);
+    }
+
     // ---- Toast ----
     function showToast(msg) {
       const t = document.getElementById('toast');
@@ -910,6 +1038,35 @@
       switchTab('rw1');
       renderList();
       updateEstimator();
+      initImportModal();
+    }
+
+    function initImportModal() {
+      const overlay = document.getElementById('importOverlay');
+      if (!overlay) return;
+
+      // Backdrop click closes; clicks inside the panel must not.
+      overlay.addEventListener('click', (event) => {
+        if (event.target === overlay) closeImportModal();
+      });
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && overlay.classList.contains('open')) closeImportModal();
+      });
+
+      // Any edit invalidates the last check, so re-arm the Import button.
+      const input = document.getElementById('importInput');
+      if (input) {
+        input.addEventListener('input', () => {
+          importResult = null;
+          document.getElementById('importApplyBtn').disabled = true;
+        });
+      }
+      // Switching append/replace changes the cap maths, so re-validate.
+      document.querySelectorAll('input[name="importMode"]').forEach((radio) => {
+        radio.addEventListener('change', () => {
+          if (document.getElementById('importInput').value.trim()) checkImport();
+        });
+      });
     }
 
     Object.assign(window, {
@@ -926,6 +1083,10 @@
       removeImage,
       selectQuestion,
       deleteQuestion,
+      openImportModal,
+      closeImportModal,
+      checkImport,
+      applyImport,
     });
 
     init();
